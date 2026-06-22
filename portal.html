@@ -2,10 +2,55 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zangouleh | Student & Teacher Portal</title>
+<title>Zangouleh | Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+#portal-loading{text-align:center;padding:4rem 2rem}
+#portal-loading .spin{display:inline-block;width:40px;height:40px;border:3px solid rgba(130,35,49,0.2);border-top-color:var(--burgundy);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#portal-login{max-width:460px;margin:3rem auto;padding:0 1rem}
+.login-error{background:#fff0f0;border:1px solid #f5c6cb;color:#721c24;padding:.7rem 1rem;border-radius:4px;font-size:.82rem;margin-bottom:1rem;display:none}
+.dash-header{background:var(--burgundy);color:var(--yellow);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+.dash-header h2{font-family:var(--font-display);font-size:1.3rem;font-style:italic;margin:0}
+.dash-header p{font-size:.78rem;opacity:.75;margin:.15rem 0 0}
+.dash-signout{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:var(--yellow);padding:.4rem 1rem;border-radius:4px;cursor:pointer;font-size:.8rem;font-family:var(--font-body)}
+.dash-signout:hover{background:rgba(255,255,255,.25)}
+.dash-body{padding:2rem;max-width:1100px;margin:0 auto}
+.dash-section-title{font-family:var(--font-display);font-size:1.1rem;font-style:italic;color:var(--burgundy);margin:2rem 0 1rem;border-bottom:1px solid rgba(130,35,49,.2);padding-bottom:.4rem}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+.dash-stat{background:var(--yellow-dark);border:2px solid rgba(130,35,49,.15);border-radius:6px;padding:1.25rem 1.5rem}
+.dash-stat-num{font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--burgundy);line-height:1}
+.dash-stat-label{font-size:.78rem;color:var(--ink-soft);margin-top:.3rem}
+.dash-table-wrap{overflow-x:auto;margin-bottom:2rem}
+table.dash-table{width:100%;border-collapse:collapse;font-size:.83rem}
+table.dash-table th{background:var(--burgundy);color:var(--yellow);padding:.6rem .9rem;text-align:left;font-weight:600}
+table.dash-table td{padding:.6rem .9rem;border-bottom:1px solid rgba(130,35,49,.1)}
+table.dash-table tr:nth-child(even) td{background:rgba(246,235,138,.2)}
+table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:20px;font-size:.72rem;font-weight:600}
+.badge-green{background:#d4edda;color:#155724}
+.badge-red{background:#f8d7da;color:#721c24}
+.badge-yellow{background:#fff3cd;color:#856404}
+.role-badge{display:inline-block;padding:.2rem .75rem;border-radius:20px;font-size:.75rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.role-admin{background:var(--yellow);color:var(--burgundy)}
+.role-teacher{background:#d1ecf1;color:#0c5460}
+.role-student{background:#d4edda;color:#155724}
+.dash-form{background:var(--yellow-dark);border:2px solid rgba(130,35,49,.15);border-radius:6px;padding:1.5rem;margin-bottom:1.5rem}
+.dash-form-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.75rem;margin-bottom:.75rem}
+.dash-form label{font-size:.78rem;font-weight:600;color:var(--ink-mid);display:block;margin-bottom:.25rem}
+.dash-form input,.dash-form select{width:100%;padding:.45rem .7rem;border:1.5px solid rgba(130,35,49,.25);border-radius:4px;font-size:.83rem;font-family:var(--font-body);background:#fff;box-sizing:border-box}
+.dash-form input:focus,.dash-form select:focus{outline:none;border-color:var(--burgundy)}
+.dash-form-actions{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:.5rem;align-items:center}
+.btn-dash{padding:.45rem 1.1rem;border:none;border-radius:4px;cursor:pointer;font-size:.82rem;font-weight:600;font-family:var(--font-body)}
+.btn-dash-primary{background:var(--burgundy);color:var(--yellow)}
+.btn-dash-primary:hover{opacity:.88}
+.btn-mark-paid{background:#155724;color:#fff;border:none;border-radius:3px;padding:.2rem .5rem;font-size:.72rem;cursor:pointer}
+.btn-mark-paid:hover{opacity:.85}
+</style>
 </head>
 <body>
 <nav id="mainNav">
@@ -16,56 +61,151 @@
   </ul>
   <div class="hamburger" onclick="toggleNav()"><span></span><span></span><span></span></div>
 </nav>
+
 <main>
-  <div class="page-hero">
-    <div class="container">
-      <p class="page-hero-label">Members Area · پورتال</p>
-      <h1 class="page-hero-title">Student &amp; Teacher <em>Portal</em></h1>
+  <!-- LOADING -->
+  <div id="portal-loading" class="page-content">
+    <div class="spin"></div>
+    <p style="margin-top:1rem;color:var(--ink-soft);font-size:.85rem">Loading portal…</p>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="portal-login" style="display:none" class="page-content">
+    <div id="portal-login-inner">
+      <p style="font-size:.8rem;color:var(--ink-soft);text-align:center;margin-bottom:.5rem">Members Area · پورتال اعضا</p>
+      <h2 style="font-family:var(--font-display);font-size:1.8rem;color:var(--burgundy);font-style:italic;text-align:center;margin-bottom:.3rem">Sign In</h2>
+      <p style="text-align:center;font-size:.82rem;color:var(--ink-soft);margin-bottom:2rem">Enter your email and password to access your portal.</p>
+      <div class="login-error" id="login-error"></div>
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group"><label class="form-label">Email Address</label><input type="email" id="login-email" class="form-input" placeholder="your@email.com" required></div>
+        <div class="form-group"><label class="form-label">Password</label><input type="password" id="login-password" class="form-input" placeholder="••••••••" required></div>
+        <button type="submit" class="btn-primary" style="width:100%;margin-top:.5rem" id="login-btn">Sign In</button>
+      </form>
+      <p style="text-align:center;font-size:.78rem;color:var(--ink-soft);margin-top:1.5rem">Don't have access? <a href="contact.html" style="color:var(--burgundy)">Contact the school</a> to get your account.</p>
     </div>
   </div>
-  <div class="page-content">
-    <div class="container">
-      <div class="portal-tabs reveal">
-        <button class="portal-tab active" onclick="switchTab(event,'student')">Student Portal</button>
-        <button class="portal-tab" onclick="switchTab(event,'teacher')">Teacher Portal</button>
-      </div>
 
-      <div id="student" class="portal-panel active reveal">
-        <p class="section-subtitle" style="margin-bottom:2.5rem">Everything you need to manage your learning journey in one place — schedules, practice resources, repertoire, and progress.</p>
-        <div class="four-col">
-          <div class="portal-card"><div class="portal-card-icon">📅</div><div class="portal-card-title">My Schedule</div><div class="portal-card-text">View upcoming lessons, recital dates, and school events in one calendar view.</div></div>
-          <div class="portal-card"><div class="portal-card-icon">🎼</div><div class="portal-card-title">Repertoire Library</div><div class="portal-card-text">Access sheet music, audio references, and backing tracks assigned by your instructor.</div></div>
-          <div class="portal-card"><div class="portal-card-icon">📈</div><div class="portal-card-title">Progress Tracker</div><div class="portal-card-text">See term-by-term milestone reports and skill development notes from your instructor.</div></div>
-          <div class="portal-card"><div class="portal-card-icon">🎧</div><div class="portal-card-title">Practice Logs</div><div class="portal-card-text">Log your daily practice time and notes. Share with your instructor for targeted feedback.</div></div>
-          <div class="portal-card"><div class="portal-card-icon">💬</div><div class="portal-card-title">Messages</div><div class="portal-card-text">Direct messaging with your instructor. Ask questions, share recordings, get feedback.</div></div>
-          <div class="portal-card"><div class="portal-card-icon">🎟️</div><div class="portal-card-title">Event Registration</div><div class="portal-card-text">Register for upcoming concerts, workshops, and masterclasses directly from your portal.</div></div>
-          <div class="portal-card"><div class="portal-card-icon">📄</div><div class="portal-card-title">Term Reports</div><div class="portal-card-text">Download end-of-term performance and attendance reports for your personal records.</div></div>
-          <div class="portal-card"><div class="portal-card-icon">🔔</div><div class="portal-card-title">Notifications</div><div class="portal-card-text">Get reminders for lessons, payments due, schedule changes, and school announcements.</div></div>
-        </div>
-        <div style="text-align:center;margin-top:2.5rem">
-          <a href="contact.html" class="btn-primary">Request Portal Access</a>
-        </div>
-      </div>
+  <!-- DASHBOARD -->
+  <div id="portal-dashboard" style="display:none">
 
-      <div id="teacher" class="portal-panel reveal" style="display:none">
-        <p class="section-subtitle" style="margin-bottom:2.5rem">Instructor tools for managing your roster, lesson plans, progress reports, and studio bookings — all in one place.</p>
-        <div class="four-col">
-          <div class="portal-card"><div class="portal-card-icon">👥</div><div class="portal-card-title">My Students</div><div class="portal-card-text">Full roster view — student profiles, contact info, attendance history, and instrument notes.</div></div>
-          <div class="portal-card"><div class="portal-card-icon">📋</div><div class="portal-card-title">Lesson Plans</div><div class="portal-card-text">Create, store, and share lesson plans. Build repertoire lists and assign practice tasks.</div></div>
-          <div class="portal-card"><div class="portal-card-icon">📝</div><div class="portal-card-title">Progress Reports</div><div class="portal-card-text">Write and submit term-end progress reports for each student. Parents receive a copy automatically.</div></div>
-          <div class="portal-card"><div class="portal-card-icon">🏛️</div><div class="portal-card-title">Studio Booking</div><div class="portal-card-text">Reserve studio time for student recordings, recital prep, or personal production projects.</div></div>
-          <div class="portal-card"><div class="portal-card-icon">📆</div><div class="portal-card-title">Schedule Manager</div><div class="portal-card-text">Manage your availability, set lesson times, and handle rescheduling requests from students.</div></div>
-          <div class="portal-card"><div class="portal-card-icon">💰</div><div class="portal-card-title">Payroll & Hours</div><div class="portal-card-text">Track logged teaching hours and access payment summaries. Download monthly statements.</div></div>
-          <div class="portal-card"><div class="portal-card-icon">📚</div><div class="portal-card-title">Resource Library</div><div class="portal-card-text">Access shared sheet music, backing tracks, and instructional materials contributed by all faculty.</div></div>
-          <div class="portal-card"><div class="portal-card-icon">📣</div><div class="portal-card-title">Announcements</div><div class="portal-card-text">Send individual or group announcements to your students and their families.</div></div>
+    <!-- ADMIN -->
+    <div id="dash-admin" style="display:none">
+      <div class="dash-header">
+        <div><h2>Admin Dashboard &nbsp;<span class="role-badge role-admin">Admin</span></h2><p id="admin-email-display"></p></div>
+        <button class="dash-signout" onclick="signOut()">Sign Out</button>
+      </div>
+      <div class="dash-body">
+        <div class="dash-grid">
+          <div class="dash-stat"><div class="dash-stat-num" id="stat-students">–</div><div class="dash-stat-label">Total Students</div></div>
+          <div class="dash-stat"><div class="dash-stat-num" id="stat-teachers">–</div><div class="dash-stat-label">Teachers</div></div>
+          <div class="dash-stat"><div class="dash-stat-num" id="stat-paid">–</div><div class="dash-stat-label">Paid</div></div>
+          <div class="dash-stat"><div class="dash-stat-num" id="stat-unpaid">–</div><div class="dash-stat-label">Unpaid / Pending</div></div>
         </div>
-        <div style="text-align:center;margin-top:2.5rem">
-          <a href="contact.html" class="btn-primary">Request Instructor Access</a>
+
+        <div class="dash-section-title">Add / Update Payment</div>
+        <div class="dash-form">
+          <div class="dash-form-row">
+            <div><label>Student Email</label><input type="email" id="pay-student-email" placeholder="student@email.com"></div>
+            <div><label>Amount (CAD $)</label><input type="number" id="pay-amount" placeholder="240"></div>
+            <div><label>Package</label><select id="pay-package"><option value="consultation">Consultation</option><option value="4-session">4-Session</option><option value="12-session">12-Session Term</option></select></div>
+            <div><label>Status</label><select id="pay-status"><option value="paid">Paid</option><option value="pending">Pending</option><option value="overdue">Overdue</option></select></div>
+            <div><label>Due Date</label><input type="date" id="pay-due-date"></div>
+          </div>
+          <div class="dash-form-actions">
+            <button class="btn-dash btn-dash-primary" onclick="upsertPayment()">Save Payment</button>
+            <span id="pay-msg" style="font-size:.8rem;color:var(--burgundy)"></span>
+          </div>
+        </div>
+
+        <div class="dash-section-title">Student Payments</div>
+        <div class="dash-table-wrap">
+          <table class="dash-table">
+            <thead><tr><th>Student</th><th>Package</th><th>Amount</th><th>Status</th><th>Due Date</th><th>Action</th></tr></thead>
+            <tbody id="admin-payments-body"><tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
+          </table>
+        </div>
+
+        <div class="dash-section-title">All Students</div>
+        <div class="dash-table-wrap">
+          <table class="dash-table">
+            <thead><tr><th>Name</th><th>Email</th><th>Instrument</th><th>Teacher</th><th>Joined</th></tr></thead>
+            <tbody id="admin-students-body"><tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
+          </table>
         </div>
       </div>
     </div>
+
+    <!-- TEACHER -->
+    <div id="dash-teacher" style="display:none">
+      <div class="dash-header">
+        <div><h2>Teacher Dashboard &nbsp;<span class="role-badge role-teacher">Teacher</span></h2><p id="teacher-email-display"></p></div>
+        <button class="dash-signout" onclick="signOut()">Sign Out</button>
+      </div>
+      <div class="dash-body">
+        <div class="dash-grid">
+          <div class="dash-stat"><div class="dash-stat-num" id="t-stat-students">–</div><div class="dash-stat-label">My Students</div></div>
+          <div class="dash-stat"><div class="dash-stat-num" id="t-stat-sessions">–</div><div class="dash-stat-label">Sessions This Month</div></div>
+        </div>
+
+        <div class="dash-section-title">Record Attendance</div>
+        <div class="dash-form">
+          <div class="dash-form-row">
+            <div><label>Student Email</label><input type="email" id="att-student-email" placeholder="student@email.com"></div>
+            <div><label>Date</label><input type="date" id="att-date"></div>
+            <div><label>Status</label><select id="att-status"><option value="present">Present</option><option value="absent">Absent</option><option value="late">Late</option></select></div>
+            <div><label>Notes (optional)</label><input type="text" id="att-notes" placeholder="Practiced scales…"></div>
+          </div>
+          <div class="dash-form-actions">
+            <button class="btn-dash btn-dash-primary" onclick="recordAttendance()">Save Attendance</button>
+            <span id="att-msg" style="font-size:.8rem;color:var(--burgundy)"></span>
+          </div>
+        </div>
+
+        <div class="dash-section-title">My Students</div>
+        <div class="dash-table-wrap">
+          <table class="dash-table">
+            <thead><tr><th>Name</th><th>Instrument</th><th>Sessions Attended</th><th>Last Session</th><th>Notes</th></tr></thead>
+            <tbody id="teacher-students-body"><tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDENT -->
+    <div id="dash-student" style="display:none">
+      <div class="dash-header">
+        <div><h2>My Portal &nbsp;<span class="role-badge role-student">Student</span></h2><p id="student-email-display"></p></div>
+        <button class="dash-signout" onclick="signOut()">Sign Out</button>
+      </div>
+      <div class="dash-body">
+        <div class="dash-grid">
+          <div class="dash-stat"><div class="dash-stat-num" id="s-stat-sessions">–</div><div class="dash-stat-label">Sessions Attended</div></div>
+          <div class="dash-stat"><div class="dash-stat-num" id="s-stat-paid" style="font-size:1.5rem">–</div><div class="dash-stat-label">Last Tuition Paid</div></div>
+          <div class="dash-stat"><div class="dash-stat-num" id="s-stat-next" style="font-size:1.2rem;color:var(--ink-mid)">–</div><div class="dash-stat-label">Next Payment Due</div></div>
+          <div class="dash-stat"><div class="dash-stat-num" id="s-stat-status">–</div><div class="dash-stat-label">Payment Status</div></div>
+        </div>
+
+        <div class="dash-section-title">My Attendance</div>
+        <div class="dash-table-wrap">
+          <table class="dash-table">
+            <thead><tr><th>Date</th><th>Status</th><th>Notes from Teacher</th></tr></thead>
+            <tbody id="student-attendance-body"><tr><td colspan="3" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
+          </table>
+        </div>
+
+        <div class="dash-section-title">Payment History</div>
+        <div class="dash-table-wrap">
+          <table class="dash-table">
+            <thead><tr><th>Package</th><th>Amount</th><th>Status</th><th>Due Date</th></tr></thead>
+            <tbody id="student-payments-body"><tr><td colspan="4" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 </main>
+
 <footer>
   <div class="footer-logo">Zangouleh</div><div class="footer-tagline">آموزشگاه موسیقی زنگوله · Est. 2011 · Toronto</div><div class="footer-brand-line">Your First Live Performance After Just 12 Sessions</div>
   <div class="footer-dots"><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div></div>
@@ -73,14 +213,168 @@
   <p class="footer-copy">© 2025 Zangouleh Music School · 647-866-7912 · All rights reserved.</p>
 </footer>
 <a href="https://wa.me/16478667912" class="wa-float" target="_blank">💬</a>
+
 <script>
 function toggleNav(){document.getElementById('navLinks').classList.toggle('open');}
-function switchTab(e,id){
-  document.querySelectorAll('.portal-tab').forEach(t=>t.classList.remove('active'));
-  e.target.classList.add('active');
-  document.querySelectorAll('.portal-panel').forEach(p=>{p.style.display='none';p.classList.remove('active');});
-  var panel=document.getElementById(id);panel.style.display='block';panel.classList.add('active');
+
+async function handleLogin(e){
+  e.preventDefault();
+  const btn=document.getElementById('login-btn');
+  const err=document.getElementById('login-error');
+  btn.textContent='Signing in…';btn.disabled=true;err.style.display='none';
+  const {data,error}=await sb.auth.signInWithPassword({
+    email:document.getElementById('login-email').value.trim(),
+    password:document.getElementById('login-password').value
+  });
+  if(error){err.textContent=error.message;err.style.display='block';btn.textContent='Sign In';btn.disabled=false;return;}
+  loadDashboard(data.user);
 }
-document.querySelectorAll('.reveal').forEach(el=>{new IntersectionObserver((en)=>{en.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')});},{threshold:0.08}).observe(el)});
+
+async function signOut(){
+  await sb.auth.signOut();
+  document.getElementById('portal-dashboard').style.display='none';
+  document.getElementById('dash-admin').style.display='none';
+  document.getElementById('dash-teacher').style.display='none';
+  document.getElementById('dash-student').style.display='none';
+  document.getElementById('portal-login').style.display='block';
+}
+
+window.addEventListener('DOMContentLoaded',async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  document.getElementById('portal-loading').style.display='none';
+  if(session){loadDashboard(session.user);}
+  else{document.getElementById('portal-login').style.display='block';}
+});
+
+async function loadDashboard(user){
+  document.getElementById('portal-login').style.display='none';
+  document.getElementById('portal-dashboard').style.display='block';
+  const {data:profile}=await sb.from('profiles').select('*').eq('id',user.id).single();
+  const role=profile?.role||'student';
+  if(role==='admin'){
+    document.getElementById('dash-admin').style.display='block';
+    document.getElementById('admin-email-display').textContent=user.email;
+    loadAdminData();
+  } else if(role==='teacher'){
+    document.getElementById('dash-teacher').style.display='block';
+    document.getElementById('teacher-email-display').textContent=user.email;
+    loadTeacherData(user);
+  } else {
+    document.getElementById('dash-student').style.display='block';
+    document.getElementById('student-email-display').textContent=user.email;
+    loadStudentData(user);
+  }
+}
+
+// ── ADMIN ──
+async function loadAdminData(){
+  const [{data:students},{data:teachers},{data:payments}]=await Promise.all([
+    sb.from('profiles').select('*').eq('role','student'),
+    sb.from('profiles').select('*').eq('role','teacher'),
+    sb.from('payments').select('*').order('due_date',{ascending:true})
+  ]);
+  document.getElementById('stat-students').textContent=students?.length??0;
+  document.getElementById('stat-teachers').textContent=teachers?.length??0;
+  document.getElementById('stat-paid').textContent=payments?.filter(p=>p.status==='paid').length??0;
+  document.getElementById('stat-unpaid').textContent=payments?.filter(p=>p.status!=='paid').length??0;
+
+  const pb=document.getElementById('admin-payments-body');
+  pb.innerHTML=payments?.length
+    ?payments.map(p=>`<tr>
+      <td>${p.student_email}</td><td>${p.package||'–'}</td><td>$${p.amount}</td>
+      <td><span class="badge ${p.status==='paid'?'badge-green':p.status==='overdue'?'badge-red':'badge-yellow'}">${p.status}</span></td>
+      <td>${p.due_date||'–'}</td>
+      <td>${p.status!=='paid'?`<button class="btn-mark-paid" onclick="markPaid('${p.id}')">Mark Paid</button>`:'–'}</td>
+    </tr>`).join('')
+    :'<tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:2rem">No payments yet.</td></tr>';
+
+  const sb2=document.getElementById('admin-students-body');
+  sb2.innerHTML=students?.length
+    ?students.map(s=>`<tr>
+      <td>${s.full_name||'–'}</td><td>${s.email||'–'}</td><td>${s.instrument||'–'}</td>
+      <td>${s.teacher_name||'–'}</td><td>${s.created_at?new Date(s.created_at).toLocaleDateString():'–'}</td>
+    </tr>`).join('')
+    :'<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">No students yet.</td></tr>';
+}
+
+async function markPaid(id){
+  await sb.from('payments').update({status:'paid'}).eq('id',id);
+  loadAdminData();
+}
+
+async function upsertPayment(){
+  const email=document.getElementById('pay-student-email').value.trim();
+  const amount=document.getElementById('pay-amount').value;
+  const pkg=document.getElementById('pay-package').value;
+  const status=document.getElementById('pay-status').value;
+  const due=document.getElementById('pay-due-date').value;
+  const msg=document.getElementById('pay-msg');
+  if(!email||!amount){msg.textContent='Email and amount required.';return;}
+  const {error}=await sb.from('payments').insert({student_email:email,amount:parseFloat(amount),package:pkg,status,due_date:due||null});
+  if(error){msg.textContent='Error: '+error.message;}
+  else{msg.textContent='✓ Saved!';loadAdminData();setTimeout(()=>{msg.textContent='';},3000);}
+}
+
+// ── TEACHER ──
+async function loadTeacherData(user){
+  const {data:students}=await sb.from('profiles').select('*').eq('teacher_id',user.id);
+  const now=new Date();
+  const {data:sessions}=await sb.from('attendance').select('*').eq('teacher_id',user.id)
+    .gte('date',`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`);
+  document.getElementById('t-stat-students').textContent=students?.length??0;
+  document.getElementById('t-stat-sessions').textContent=sessions?.length??0;
+  document.getElementById('att-date').value=now.toISOString().split('T')[0];
+
+  const tbody=document.getElementById('teacher-students-body');
+  if(!students?.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">No students assigned yet.</td></tr>';return;}
+  const {data:allAtt}=await sb.from('attendance').select('*').in('student_id',students.map(s=>s.id));
+  tbody.innerHTML=students.map(s=>{
+    const att=(allAtt||[]).filter(a=>a.student_id===s.id);
+    const last=att.sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+    return `<tr><td>${s.full_name||'–'}</td><td>${s.instrument||'–'}</td><td>${att.filter(a=>a.status==='present').length}</td><td>${last?last.date:'–'}</td><td>${last?.notes||'–'}</td></tr>`;
+  }).join('');
+}
+
+async function recordAttendance(){
+  const {data:{session}}=await sb.auth.getSession();
+  const email=document.getElementById('att-student-email').value.trim();
+  const date=document.getElementById('att-date').value;
+  const status=document.getElementById('att-status').value;
+  const notes=document.getElementById('att-notes').value.trim();
+  const msg=document.getElementById('att-msg');
+  if(!email||!date){msg.textContent='Email and date required.';return;}
+  const {data:profile}=await sb.from('profiles').select('id').eq('email',email).single();
+  if(!profile){msg.textContent='Student not found.';return;}
+  const {error}=await sb.from('attendance').insert({student_id:profile.id,teacher_id:session.user.id,date,status,notes:notes||null});
+  if(error){msg.textContent='Error: '+error.message;}
+  else{msg.textContent='✓ Saved!';loadTeacherData(session.user);setTimeout(()=>{msg.textContent='';},3000);}
+}
+
+// ── STUDENT ──
+async function loadStudentData(user){
+  const [{data:att},{data:payments}]=await Promise.all([
+    sb.from('attendance').select('*').eq('student_id',user.id).order('date',{ascending:false}),
+    sb.from('payments').select('*').eq('student_email',user.email).order('due_date',{ascending:false})
+  ]);
+  document.getElementById('s-stat-sessions').textContent=att?.filter(a=>a.status==='present').length??0;
+  const lastPaid=payments?.find(p=>p.status==='paid');
+  document.getElementById('s-stat-paid').textContent=lastPaid?`$${lastPaid.amount}`:'$0';
+  const nextDue=payments?.find(p=>p.status!=='paid');
+  document.getElementById('s-stat-next').textContent=nextDue?`$${nextDue.amount}`:'None';
+  document.getElementById('s-stat-status').innerHTML=nextDue
+    ?`<span class="badge ${nextDue.status==='overdue'?'badge-red':'badge-yellow'}">${nextDue.status}</span>`
+    :'<span class="badge badge-green">All clear</span>';
+
+  const atbody=document.getElementById('student-attendance-body');
+  atbody.innerHTML=att?.length
+    ?att.map(a=>`<tr><td>${a.date}</td><td><span class="badge ${a.status==='present'?'badge-green':a.status==='absent'?'badge-red':'badge-yellow'}">${a.status}</span></td><td>${a.notes||'–'}</td></tr>`).join('')
+    :'<tr><td colspan="3" style="text-align:center;color:var(--ink-soft);padding:2rem">No sessions recorded yet.</td></tr>';
+
+  const pbody=document.getElementById('student-payments-body');
+  pbody.innerHTML=payments?.length
+    ?payments.map(p=>`<tr><td>${p.package||'–'}</td><td>$${p.amount}</td><td><span class="badge ${p.status==='paid'?'badge-green':p.status==='overdue'?'badge-red':'badge-yellow'}">${p.status}</span></td><td>${p.due_date||'–'}</td></tr>`).join('')
+    :'<tr><td colspan="4" style="text-align:center;color:var(--ink-soft);padding:2rem">No payment records yet.</td></tr>';
+}
 </script>
-</body></html>
+</body>
+</html>
