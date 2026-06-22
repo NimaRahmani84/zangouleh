@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zangouleh Music School | آموزشگاه موسیقی زنگوله</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+.home-header {
+  padding: 2rem 2rem 0;
+  text-align: center;
+}
+.home-school-name {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+}
+.home-school-name em { color: var(--burgundy); font-style: italic; }
+.home-school-fa {
+  font-family: var(--font-fa);
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  margin-top: 0.3rem;
+  direction: rtl;
+}
+.home-tagline {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--burgundy);
+  margin-top: 0.4rem;
+}
+.home-divider {
+  width: 50px; height: 2px;
+  background: var(--burgundy);
+  margin: 0.9rem auto 0;
+  border-radius: 1px;
+}
+</style>
+</head>
+<body>
+<nav id="mainNav">
+  <a href="index.html" class="nav-logo">Zangouleh<span>Music School · آموزشگاه موسیقی</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html" class="active">Home</a></li><li><a href="about.html">About</a></li><li><a href="programs.html">Programs</a></li><li><a href="instruments.html">Instruments</a></li><li><a href="instructors.html">Instructors</a></li><li><a href="wellness.html">Wellness</a></li><li><a href="events.html">Events</a></li><li><a href="studio.html">Studio</a></li><li><a href="registration.html">Register</a></li><li><a href="portal.html">Portal</a></li><li><a href="policies.html">Policies</a></li><li><a href="benefits.html">Benefits</a></li><li><a href="blog.html">Blog</a></li><li><a href="contact.html">Contact</a></li>
+    <li><a href="registration.html" class="nav-cta">Register</a></li>
+  </ul>
+  <div class="hamburger" onclick="toggleNav()"><span></span><span></span><span></span></div>
+</nav>
+
+<main class="home-main">
+  <div class="home-header">
+    <div class="home-school-name">Zangouleh <em>Music School</em></div>
+    <div class="home-school-fa">آموزشگاه موسیقی زنگوله · تورنتو، کانادا · از ۲۰۱۱</div>
+    <div class="home-tagline">Your First Live Performance After Just 12 Sessions</div>
+    <div class="home-divider"></div>
+  </div>
+
+  <div class="home-grid">
+    <a href="about.html" class="home-tile">
+      <div class="home-tile-icon">🏛️</div>
+      <div class="home-tile-name">About Us</div>
+      <div class="home-tile-fa">درباره ما</div>
+    </a>
+    <a href="programs.html" class="home-tile">
+      <div class="home-tile-icon">🎓</div>
+      <div class="home-tile-name">Programs</div>
+      <div class="home-tile-fa">برنامه‌ها</div>
+    </a>
+    <a href="instruments.html" class="home-tile">
+      <div class="home-tile-icon">🎸</div>
+      <div class="home-tile-name">Instruments</div>
+      <div class="home-tile-fa">سازها</div>
+    </a>
+    <a href="instructors.html" class="home-tile">
+      <div class="home-tile-icon">🎤</div>
+      <div class="home-tile-name">Instructors</div>
+      <div class="home-tile-fa">اساتید</div>
+    </a>
+    <a href="wellness.html" class="home-tile">
+      <div class="home-tile-icon">🌿</div>
+      <div class="home-tile-name">Music Wellness</div>
+      <div class="home-tile-fa">موسیقی‌درمانی</div>
+    </a>
+    <a href="events.html" class="home-tile">
+      <div class="home-tile-icon">🎭</div>
+      <div class="home-tile-name">Events</div>
+      <div class="home-tile-fa">رویدادها</div>
+    </a>
+    <a href="studio.html" class="home-tile">
+      <div class="home-tile-icon">🎚️</div>
+      <div class="home-tile-name">Studio</div>
+      <div class="home-tile-fa">استودیو</div>
+    </a>
+    <a href="registration.html" class="home-tile home-tile-cta">
+      <div class="home-tile-icon">✍️</div>
+      <div class="home-tile-name">Enroll / Register</div>
+      <div class="home-tile-fa">ثبت‌نام</div>
+    </a>
+    <a href="portal.html" class="home-tile">
+      <div class="home-tile-icon">🔐</div>
+      <div class="home-tile-name">Portal</div>
+      <div class="home-tile-fa">پورتال</div>
+    </a>
+    <a href="policies.html" class="home-tile">
+      <div class="home-tile-icon">📋</div>
+      <div class="home-tile-name">Policies</div>
+      <div class="home-tile-fa">قوانین</div>
+    </a>
+    <a href="benefits.html" class="home-tile">
+      <div class="home-tile-icon">🌟</div>
+      <div class="home-tile-name">Benefits</div>
+      <div class="home-tile-fa">مزایا</div>
+    </a>
+    <a href="blog.html" class="home-tile">
+      <div class="home-tile-icon">✍️</div>
+      <div class="home-tile-name">Blog</div>
+      <div class="home-tile-fa">وبلاگ</div>
+    </a>
+    <a href="contact.html" class="home-tile">
+      <div class="home-tile-icon">📞</div>
+      <div class="home-tile-name">Contact</div>
+      <div class="home-tile-fa">تماس با ما</div>
+    </a>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-logo">Zangouleh</div>
+  <div class="footer-tagline">آموزشگاه موسیقی زنگوله · Est. 2011 · Toronto</div>
+  <div class="footer-brand-line">Your First Live Performance After Just 12 Sessions</div>
+  <div class="footer-dots"><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div></div>
+  <ul class="footer-nav"><li><a href="index.html">Home</a></li><li><a href="about.html">About</a></li><li><a href="programs.html">Programs</a></li><li><a href="instruments.html">Instruments</a></li><li><a href="instructors.html">Instructors</a></li><li><a href="wellness.html">Wellness</a></li><li><a href="events.html">Events</a></li><li><a href="studio.html">Studio</a></li><li><a href="registration.html">Register</a></li><li><a href="portal.html">Portal</a></li><li><a href="policies.html">Policies</a></li><li><a href="benefits.html">Benefits</a></li><li><a href="blog.html">Blog</a></li><li><a href="contact.html">Contact</a></li></ul>
+  <p class="footer-copy">© 2025 Zangouleh Music School · 647-866-7912 · All rights reserved.</p>
+</footer>
+<a href="https://wa.me/16478667912" class="wa-float" target="_blank">💬</a>
+<script>
+function toggleNav(){document.getElementById('navLinks').classList.toggle('open');}
+</script>
+</body>
+</html>

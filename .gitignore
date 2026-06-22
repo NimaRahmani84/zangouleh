@@ -1,0 +1,13 @@
+# Claude session data
+.claude/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local PDFs / assets not needed in repo
+*.pdf
+*.jpeg
+*.jpg
+*.png
+*.gif
