@@ -7,9 +7,9 @@ Thumbs.db
 
 # Local PDFs / assets not needed in repo
 *.pdf
-*.jpeg
-*.jpg
-*.png
-*.gif
+
+# Allow site images
+!logo.jpg
+!logo.png
 
 .vercel
