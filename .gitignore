@@ -11,5 +11,6 @@ Thumbs.db
 # Allow site images
 !logo.jpg
 !logo.png
+!logo-nav.jpg
 
 .vercel
