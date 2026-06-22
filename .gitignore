@@ -11,3 +11,5 @@ Thumbs.db
 *.jpg
 *.png
 *.gif
+
+.vercel
