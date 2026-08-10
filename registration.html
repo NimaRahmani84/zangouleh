@@ -145,14 +145,14 @@
           <div class="reg-form">
             <form onsubmit="handleConsult(event)">
               <div class="form-row">
-                <div class="form-group"><label class="form-label">First Name *</label><input type="text" class="form-input" placeholder="First name" required></div>
-                <div class="form-group"><label class="form-label">Last Name *</label><input type="text" class="form-input" placeholder="Last name" required></div>
+                <div class="form-group"><label class="form-label">First Name *</label><input name="firstName" type="text" class="form-input" placeholder="First name" required></div>
+                <div class="form-group"><label class="form-label">Last Name *</label><input name="lastName" type="text" class="form-input" placeholder="Last name" required></div>
               </div>
-              <div class="form-group"><label class="form-label">Phone / WhatsApp *</label><input type="tel" class="form-input" placeholder="+1 (647) ..." required></div>
-              <div class="form-group"><label class="form-label">Email Address</label><input type="email" class="form-input" placeholder="your@email.com"></div>
+              <div class="form-group"><label class="form-label">Phone / WhatsApp *</label><input name="phone" type="tel" class="form-input" placeholder="+1 (647) ..." required></div>
+              <div class="form-group"><label class="form-label">Email Address</label><input name="email" type="email" class="form-input" placeholder="your@email.com"></div>
               <div class="form-group">
                 <label class="form-label">Instrument / Program of Interest</label>
-                <select class="form-select">
+                <select name="instrument" class="form-select">
                   <option value="">Not sure yet</option>
                   <optgroup label="Iranian Instruments"><option>Tar</option><option>Setar</option><option>Santur</option><option>Daf</option><option>Tombak</option></optgroup>
                   <optgroup label="Western Instruments"><option>Piano</option><option>Guitar</option><option>Violin</option><option>Drums</option><option>Voice</option></optgroup>
@@ -161,13 +161,13 @@
               </div>
               <div class="form-group">
                 <label class="form-label">Student Age</label>
-                <select class="form-select"><option value="">Select age range</option><option>4–8 years</option><option>9–12 years</option><option>13–17 years</option><option>18–30 years</option><option>31–50 years</option><option>51+ years</option></select>
+                <select name="age" class="form-select"><option value="">Select age range</option><option>4–8 years</option><option>9–12 years</option><option>13–17 years</option><option>18–30 years</option><option>31–50 years</option><option>51+ years</option></select>
               </div>
               <div class="form-group">
                 <label class="form-label">Preferred Contact Method</label>
-                <select class="form-select"><option>WhatsApp message</option><option>Phone call</option><option>Email</option><option>In-person visit</option></select>
+                <select name="contactMethod" class="form-select"><option>WhatsApp message</option><option>Phone call</option><option>Email</option><option>In-person visit</option></select>
               </div>
-              <div class="form-group"><label class="form-label">Message / Questions (optional)</label><textarea class="form-textarea" placeholder="Tell us about your goals or any questions you have..."></textarea></div>
+              <div class="form-group"><label class="form-label">Message / Questions (optional)</label><textarea name="message" class="form-textarea" placeholder="Tell us about your goals or any questions you have..."></textarea></div>
               <button type="submit" class="btn-primary" style="width:100%">Request Consultation</button>
             </form>
             <div id="consult-success" class="form-success">✓ Thank you! We'll reach out within 24 hours to schedule your consultation.</div>
@@ -180,8 +180,8 @@
             <div class="reg-step"><div class="step-num">4</div><div><div class="step-title">Enroll When Ready</div><div class="step-desc">No pressure. When you're ready, complete enrollment and tuition payment to start classes.</div></div></div>
             <div style="margin-top:2rem;background:var(--yellow-dark);border:2px solid rgba(130,35,49,0.25);border-radius:4px;padding:1.5rem">
               <p style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:var(--burgundy);font-style:italic;margin-bottom:0.5rem">📞 Prefer to call directly?</p>
-              <p style="font-size:0.82rem;color:var(--ink-mid);line-height:1.7;margin-bottom:0.75rem"><strong>647-866-7912</strong> — we respond quickly.</p>
-              <a href="https://wa.me/16478667912" class="btn-whatsapp" target="_blank">💬 WhatsApp Us</a>
+              <p style="font-size:0.82rem;color:var(--ink-mid);line-height:1.7;margin-bottom:0.75rem"><strong>+1 647 827 6462</strong> — we respond quickly.</p>
+              <a href="https://wa.me/16478276462" class="btn-whatsapp" target="_blank">💬 WhatsApp Us</a>
             </div>
           </div>
         </div>
@@ -197,14 +197,14 @@
           <div class="reg-form">
             <form onsubmit="handleEnroll(event)">
               <div class="form-row">
-                <div class="form-group"><label class="form-label">First Name * — نام</label><input type="text" class="form-input" placeholder="First name" required></div>
-                <div class="form-group"><label class="form-label">Last Name * — نام خانوادگی</label><input type="text" class="form-input" placeholder="Last name" required></div>
+                <div class="form-group"><label class="form-label">First Name * — نام</label><input name="firstName" type="text" class="form-input" placeholder="First name" required></div>
+                <div class="form-group"><label class="form-label">Last Name * — نام خانوادگی</label><input name="lastName" type="text" class="form-input" placeholder="Last name" required></div>
               </div>
-              <div class="form-group"><label class="form-label">Phone / WhatsApp * — شماره تلفن</label><input type="tel" class="form-input" placeholder="+1 (647) ..." required></div>
-              <div class="form-group"><label class="form-label">Email Address *</label><input type="email" class="form-input" placeholder="your@email.com" required></div>
+              <div class="form-group"><label class="form-label">Phone / WhatsApp * — شماره تلفن</label><input name="phone" type="tel" class="form-input" placeholder="+1 (647) ..." required></div>
+              <div class="form-group"><label class="form-label">Email Address *</label><input name="email" type="email" class="form-input" placeholder="your@email.com" required></div>
               <div class="form-group">
                 <label class="form-label">Instrument / Program * — ساز یا برنامه</label>
-                <select class="form-select" required>
+                <select name="instrument" class="form-select" required>
                   <option value="">Select your instrument or program</option>
                   <optgroup label="Iranian Instruments — سازهای ایرانی"><option>Tar — تار</option><option>Setar — سه‌تار</option><option>Santur — سنتور</option><option>Daf — دف</option><option>Tombak — تنبک</option></optgroup>
                   <optgroup label="Western Instruments"><option>Piano</option><option>Guitar</option><option>Violin</option><option>Drums</option><option>Voice / Singing</option></optgroup>
@@ -213,19 +213,19 @@
               </div>
               <div class="form-group">
                 <label class="form-label">Preferred Instructor — استاد</label>
-                <select class="form-select">
+                <select name="instructor" class="form-select">
                   <option value="">Assigned by the school (recommended)</option>
-                  <option>Aria Nazari — Tar &amp; Setar</option>
-                  <option>Sara Rahimi — Piano &amp; Theory</option>
-                  <option>Dariush Moradi — Santur &amp; Tombak</option>
-                  <option>Layla Tehrani — Voice &amp; Choir</option>
-                  <option>Kamyar Jalali — Guitar &amp; Composition</option>
-                  <option>Neda Farahani — Violin &amp; Kids Program</option>
+                  <option>Nima Rahmani — Santur &amp; Music Theory</option>
+                  <option>Amirali Kamali — Violin &amp; Kamancheh</option>
+                  <option>Nima Hagighi — Cello</option>
+                  <option>Yaganeh Vardi — Piano</option>
+                  <option>Abbas Maarefvand — Cajon</option>
+                  <option>Mehdi Yousefian — Oud</option>
                 </select>
               </div>
               <div class="form-group">
                 <label class="form-label">Preferred Class Time * — زمان کلاس</label>
-                <select class="form-select" required>
+                <select name="classTime" class="form-select" required>
                   <option value="">Select preferred time</option>
                   <optgroup label="Weekday Mornings"><option>Monday 9am–12pm</option><option>Tuesday 9am–12pm</option><option>Wednesday 9am–12pm</option><option>Thursday 9am–12pm</option><option>Friday 9am–12pm</option></optgroup>
                   <optgroup label="Weekday Afternoons"><option>Monday 12pm–5pm</option><option>Tuesday 12pm–5pm</option><option>Wednesday 12pm–5pm</option><option>Thursday 12pm–5pm</option><option>Friday 12pm–5pm</option></optgroup>
@@ -236,22 +236,22 @@
               <div class="form-row">
                 <div class="form-group">
                   <label class="form-label">Lesson Type</label>
-                  <select class="form-select"><option>Private (one-on-one)</option><option>Group class</option></select>
+                  <select name="lessonType" class="form-select"><option>Private (one-on-one)</option><option>Group class</option></select>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Student Age</label>
-                  <select class="form-select"><option value="">Select</option><option>4–8 years</option><option>9–12 years</option><option>13–17 years</option><option>18–30 years</option><option>31–50 years</option><option>51+ years</option></select>
+                  <select name="age" class="form-select"><option value="">Select</option><option>4–8 years</option><option>9–12 years</option><option>13–17 years</option><option>18–30 years</option><option>31–50 years</option><option>51+ years</option></select>
                 </div>
               </div>
               <div class="form-group">
                 <label class="form-label">Package *</label>
-                <select class="form-select" id="pkg-select" required onchange="updatePayment()">
+                <select name="package" class="form-select" id="pkg-select" required onchange="updatePayment()">
                   <option value="">Select a package</option>
-                  <option value="4">4-Session Package (Introductory)</option>
-                  <option value="12">12-Session Full Term</option>
+                  <option value="4-Session Package (Introductory)">4-Session Package (Introductory)</option>
+                  <option value="12-Session Full Term">12-Session Full Term</option>
                 </select>
               </div>
-              <div class="form-group"><label class="form-label">Notes (optional)</label><textarea class="form-textarea" placeholder="Any special requirements, experience level, or other notes..."></textarea></div>
+              <div class="form-group"><label class="form-label">Notes (optional)</label><textarea name="notes" class="form-textarea" placeholder="Any special requirements, experience level, or other notes..."></textarea></div>
 
               <!-- Payment Method -->
               <div class="form-group">
@@ -273,7 +273,7 @@
                     <div class="payment-opt-sub">Cash / Interac</div>
                   </div>
                 </div>
-                <input type="hidden" id="payment-method" value="">
+                <input type="hidden" name="paymentMethod" id="payment-method" value="">
               </div>
 
               <div id="payment-note" style="display:none;margin-top:0.75rem;padding:0.9rem 1.1rem;background:var(--yellow);border:2px solid var(--burgundy);border-radius:4px;font-size:0.82rem;color:var(--ink-mid);line-height:1.65"></div>
@@ -294,12 +294,12 @@
               <div style="background:var(--yellow-dark);border:2px solid rgba(130,35,49,0.2);border-radius:4px;padding:1.5rem;margin-bottom:1rem">
                 <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--burgundy);font-style:italic;margin-bottom:0.4rem">4-Session Package</div>
                 <div style="font-size:0.8rem;color:var(--ink-mid);line-height:1.6">Introductory package · 4 private or group lessons · Valid 6 weeks · Paid in full at registration</div>
-                <div style="margin-top:0.75rem;font-size:0.72rem;color:var(--ink-soft)">→ Contact us for current rates · 647-866-7912</div>
+                <div style="margin-top:0.75rem;font-size:0.72rem;color:var(--ink-soft)">→ Contact us for current rates · +1 647 827 6462</div>
               </div>
               <div style="background:var(--yellow-dark);border:2px solid var(--burgundy);border-radius:4px;padding:1.5rem;margin-bottom:1rem">
                 <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--burgundy);font-style:italic;margin-bottom:0.4rem">12-Session Full Term ⭐</div>
                 <div style="font-size:0.8rem;color:var(--ink-mid);line-height:1.6">Standard term · 12 lessons · Valid 16 weeks · 50% deposit at registration, balance before session 6 · Culminates in a live student concert</div>
-                <div style="margin-top:0.75rem;font-size:0.72rem;color:var(--ink-soft)">→ Contact us for current rates · 647-866-7912</div>
+                <div style="margin-top:0.75rem;font-size:0.72rem;color:var(--ink-soft)">→ Contact us for current rates · +1 647 827 6462</div>
               </div>
             </div>
 
@@ -314,8 +314,8 @@
             </div>
             <div style="margin-top:1rem;background:var(--yellow-dark);border:2px solid rgba(130,35,49,0.25);border-radius:4px;padding:1.5rem">
               <p style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:var(--burgundy);font-style:italic;margin-bottom:0.4rem">📞 Questions?</p>
-              <p style="font-size:0.8rem;color:var(--ink-mid);line-height:1.65;margin-bottom:0.75rem"><strong>647-866-7912</strong> — call or WhatsApp.</p>
-              <a href="https://wa.me/16478667912" class="btn-whatsapp" target="_blank">💬 WhatsApp Us</a>
+              <p style="font-size:0.8rem;color:var(--ink-mid);line-height:1.65;margin-bottom:0.75rem"><strong>+1 647 827 6462</strong> — call or WhatsApp.</p>
+              <a href="https://wa.me/16478276462" class="btn-whatsapp" target="_blank">💬 WhatsApp Us</a>
             </div>
           </div>
         </div>
@@ -328,9 +328,9 @@
   <div class="footer-logo">Zangouleh</div><div class="footer-tagline">آموزشگاه موسیقی زنگوله · Est. 2011 · Toronto</div><div class="footer-brand-line">Your First Live Performance After Just 12 Sessions</div>
   <div class="footer-dots"><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div></div>
   <ul class="footer-nav"><li><a href="index.html">Home</a></li><li><a href="about.html">About</a></li><li><a href="programs.html">Programs</a></li><li><a href="instruments.html">Instruments</a></li><li><a href="instructors.html">Instructors</a></li><li><a href="wellness.html">Wellness</a></li><li><a href="events.html">Events</a></li><li><a href="studio.html">Studio</a></li><li><a href="registration.html">Register</a></li><li><a href="portal.html">Portal</a></li><li><a href="policies.html">Policies</a></li><li><a href="benefits.html">Benefits</a></li><li><a href="blog.html">Blog</a></li><li><a href="contact.html">Contact</a></li></ul>
-  <p class="footer-copy">© 2025 Zangouleh Music School · 647-866-7912 · All rights reserved.</p>
+  <p class="footer-copy">© 2025 Zangouleh Music School · +1 647 827 6462 · All rights reserved.</p>
 </footer>
-<a href="https://wa.me/16478667912" class="wa-float" target="_blank">💬</a>
+<a href="https://wa.me/16478276462" class="wa-float" target="_blank">💬</a>
 <script>
 function toggleNav(){document.getElementById('navLinks').classList.toggle('open');}
 
@@ -354,10 +354,21 @@ function backToChoose(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function handleConsult(e){
+async function handleConsult(e){
   e.preventDefault();
-  e.target.style.display='none';
-  document.getElementById('consult-success').style.display='block';
+  var btn=e.target.querySelector('button[type="submit"]');
+  var orig=btn.textContent; btn.disabled=true; btn.textContent='Sending…';
+  var fd=new FormData(e.target);
+  var data={formType:'consultation',firstName:fd.get('firstName'),lastName:fd.get('lastName'),phone:fd.get('phone'),email:fd.get('email'),instrument:fd.get('instrument'),age:fd.get('age'),contactMethod:fd.get('contactMethod'),message:fd.get('message')};
+  try{
+    var r=await fetch('/api/send-form',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    if(!r.ok) throw 0;
+    e.target.style.display='none';
+    document.getElementById('consult-success').style.display='block';
+  }catch(_){
+    btn.disabled=false; btn.textContent=orig;
+    alert('Sorry — there was an error. Please WhatsApp or call us at +1 647 827 6462.');
+  }
 }
 
 function selectPayment(el, method){
@@ -374,14 +385,25 @@ function selectPayment(el, method){
 
 function updatePayment(){}
 
-function handleEnroll(e){
+async function handleEnroll(e){
   e.preventDefault();
   if(!selectedPayment){ alert('Please select a payment method.'); return; }
-  var success = document.getElementById('enroll-success');
-  success.style.display='block';
-  success.innerHTML='✓ Enrollment submitted! Redirecting you to our Policies &amp; Tuition page&hellip;';
-  e.target.style.display='none';
-  setTimeout(function(){ window.location.href='policies.html#enrollment'; }, 2200);
+  var btn=e.target.querySelector('button[type="submit"]');
+  var orig=btn.textContent; btn.disabled=true; btn.textContent='Sending…';
+  var fd=new FormData(e.target);
+  var data={formType:'enrollment',firstName:fd.get('firstName'),lastName:fd.get('lastName'),phone:fd.get('phone'),email:fd.get('email'),instrument:fd.get('instrument'),instructor:fd.get('instructor'),classTime:fd.get('classTime'),lessonType:fd.get('lessonType'),age:fd.get('age'),package:fd.get('package'),paymentMethod:fd.get('paymentMethod'),notes:fd.get('notes')};
+  try{
+    var r=await fetch('/api/send-form',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    if(!r.ok) throw 0;
+    var success=document.getElementById('enroll-success');
+    success.style.display='block';
+    success.innerHTML='✓ Enrollment submitted! Redirecting you to our Policies &amp; Tuition page&hellip;';
+    e.target.style.display='none';
+    setTimeout(function(){ window.location.href='policies.html#enrollment'; }, 2200);
+  }catch(_){
+    btn.disabled=false; btn.textContent=orig;
+    alert('Sorry — there was an error. Please WhatsApp or call us at +1 647 827 6462.');
+  }
 }
 
 document.querySelectorAll('.reveal').forEach(el=>{new IntersectionObserver((en)=>{en.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')});},{threshold:0.08}).observe(el)});
