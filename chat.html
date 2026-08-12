@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>گفتگو با زنگوله | Zangouleh Chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&family=Noto+Sans+Arabic:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--burgundy:#822331;--yellow:#f0d060;--yellow-dark:#e8c840;--ink:#1a1a1a;--ink-mid:#444;--bg:#fdf8ec}
+body{font-family:'Noto Sans Arabic',sans-serif;background:var(--bg);height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+
+/* Nav */
+nav{background:var(--burgundy);padding:0.85rem 1.5rem;display:flex;align-items:center;gap:1rem;flex-shrink:0}
+.nav-logo{color:var(--yellow);font-family:'Raleway',sans-serif;font-weight:700;font-size:1.1rem;text-decoration:none;display:flex;align-items:center;gap:0.6rem}
+.nav-logo span{font-size:0.65rem;opacity:0.75;font-weight:400;letter-spacing:0.05em}
+.nav-back{color:var(--yellow);text-decoration:none;font-size:0.78rem;opacity:0.85;margin-right:auto;letter-spacing:0.05em}
+.nav-back:hover{opacity:1}
+
+/* Chat area */
+.chat-wrap{flex:1;overflow-y:auto;padding:1.25rem;display:flex;flex-direction:column;gap:0.75rem;scroll-behavior:smooth}
+
+/* Messages */
+.msg{max-width:78%;padding:0.75rem 1rem;border-radius:12px;line-height:1.65;font-size:0.9rem;animation:fadeUp 0.2s ease}
+.msg.bot{background:#fff;border:1.5px solid rgba(130,35,49,0.15);align-self:flex-end;border-bottom-right-radius:3px}
+.msg.user{background:var(--burgundy);color:var(--yellow);align-self:flex-start;border-bottom-left-radius:3px}
+.msg.bot .msg-time,.msg.user .msg-time{font-size:0.65rem;opacity:0.55;margin-top:0.35rem;display:block}
+.msg.user .msg-time{color:rgba(240,208,96,0.7)}
+
+/* Typing indicator */
+.typing{display:none;align-self:flex-end;background:#fff;border:1.5px solid rgba(130,35,49,0.15);padding:0.65rem 1rem;border-radius:12px;border-bottom-right-radius:3px}
+.typing.show{display:flex;gap:4px;align-items:center}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--burgundy);opacity:0.4;animation:pulse 1.2s infinite}
+.dot:nth-child(2){animation-delay:0.2s}
+.dot:nth-child(3){animation-delay:0.4s}
+
+/* Welcome card */
+.welcome{background:#fff;border:1.5px solid rgba(130,35,49,0.2);border-radius:12px;padding:1.25rem;align-self:center;text-align:center;max-width:340px;margin:auto 0}
+.welcome-emoji{font-size:2.2rem;margin-bottom:0.5rem}
+.welcome h2{font-family:'Raleway',sans-serif;color:var(--burgundy);font-size:1rem;margin-bottom:0.4rem}
+.welcome p{font-size:0.8rem;color:var(--ink-mid);line-height:1.6}
+.quick-btns{display:flex;flex-wrap:wrap;gap:0.4rem;justify-content:center;margin-top:0.85rem}
+.quick-btn{background:var(--bg);border:1.5px solid rgba(130,35,49,0.3);border-radius:20px;padding:0.35rem 0.75rem;font-size:0.75rem;cursor:pointer;color:var(--burgundy);font-family:'Noto Sans Arabic',sans-serif;transition:all 0.15s}
+.quick-btn:hover{background:var(--yellow);border-color:var(--burgundy)}
+
+/* Input bar */
+.input-bar{padding:0.85rem 1rem;background:#fff;border-top:1.5px solid rgba(130,35,49,0.15);display:flex;gap:0.6rem;align-items:flex-end;flex-shrink:0}
+#msgInput{flex:1;border:1.5px solid rgba(130,35,49,0.25);border-radius:20px;padding:0.6rem 1rem;font-family:'Noto Sans Arabic',sans-serif;font-size:0.88rem;resize:none;outline:none;line-height:1.5;max-height:120px;overflow-y:auto;background:var(--bg)}
+#msgInput:focus{border-color:var(--burgundy)}
+#sendBtn{background:var(--burgundy);border:none;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:opacity 0.15s}
+#sendBtn:hover{opacity:0.85}
+#sendBtn:disabled{opacity:0.4;cursor:not-allowed}
+#sendBtn svg{width:18px;height:18px;fill:var(--yellow)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:0.3;transform:scale(0.85)}50%{opacity:1;transform:scale(1)}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">Zangouleh <span>آموزشگاه موسیقی</span></a>
+  <a href="index.html" class="nav-back">← بازگشت به سایت</a>
+</nav>
+
+<div class="chat-wrap" id="chatWrap">
+  <div class="welcome" id="welcome">
+    <div class="welcome-emoji">🎵</div>
+    <h2>دستیار آموزشگاه زنگوله</h2>
+    <p>سوال دارید؟ اینجام! درباره کلاس‌ها، اساتید، ثبت‌نام، یا هر چیز دیگه‌ای بپرسید.</p>
+    <div class="quick-btns">
+      <button class="quick-btn" onclick="sendQuick('چه سازهایی تدریس می‌شه؟')">🎸 سازها</button>
+      <button class="quick-btn" onclick="sendQuick('می‌خوام ثبت‌نام کنم')">✍️ ثبت‌نام</button>
+      <button class="quick-btn" onclick="sendQuick('برنامه کودکان چیه؟')">👶 کودکان</button>
+      <button class="quick-btn" onclick="sendQuick('هزینه کلاس‌ها چقدره؟')">💰 هزینه</button>
+    </div>
+  </div>
+  <div class="typing" id="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+</div>
+
+<div class="input-bar">
+  <textarea id="msgInput" placeholder="پیام خود را بنویسید..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+  <button id="sendBtn" onclick="send()" title="ارسال">
+    <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+  </button>
+</div>
+
+<script>
+const API = '/api/chat';
+const STORAGE_KEY = 'zng_chat_history';
+let history = [];
+let sending = false;
+
+function loadHistory() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      history = parsed;
+      parsed.forEach(m => {
+        if (m.role === 'user' && typeof m.content === 'string') appendMsg(m.content, 'user', false);
+        if (m.role === 'assistant' && typeof m.content === 'string') appendMsg(m.content, 'bot', false);
+      });
+      if (parsed.length > 0) document.getElementById('welcome').style.display = 'none';
+    }
+  } catch { history = []; }
+}
+
+function saveHistory() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(history)); } catch {}
+}
+
+function now() {
+  return new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function appendMsg(text, who, animate = true) {
+  const wrap = document.getElementById('chatWrap');
+  const typing = document.getElementById('typing');
+  const div = document.createElement('div');
+  div.className = `msg ${who}`;
+  div.innerHTML = `<span>${escHtml(text)}</span><span class="msg-time">${now()}</span>`;
+  if (!animate) div.style.animation = 'none';
+  wrap.insertBefore(div, typing);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+function showTyping(show) {
+  const t = document.getElementById('typing');
+  t.classList.toggle('show', show);
+  if (show) document.getElementById('chatWrap').scrollTop = 99999;
+}
+
+async function send() {
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text || sending) return;
+
+  document.getElementById('welcome').style.display = 'none';
+  input.value = ''; input.style.height = 'auto';
+  sending = true;
+  document.getElementById('sendBtn').disabled = true;
+
+  appendMsg(text, 'user');
+  showTyping(true);
+
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, history, source: 'web' })
+    });
+    const data = await res.json();
+    showTyping(false);
+    const reply = data.reply || 'متأسفم، مشکلی پیش آمد.';
+    appendMsg(reply, 'bot');
+    history = data.history || [...history, { role: 'user', content: text }, { role: 'assistant', content: reply }];
+    saveHistory();
+  } catch {
+    showTyping(false);
+    appendMsg('متأسفم، خطایی رخ داد. لطفاً دوباره تلاش کنید.', 'bot');
+  }
+
+  sending = false;
+  document.getElementById('sendBtn').disabled = false;
+  input.focus();
+}
+
+function sendQuick(text) {
+  document.getElementById('msgInput').value = text;
+  send();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+loadHistory();
+document.getElementById('msgInput').focus();
+</script>
+</body>
+</html>
