@@ -1,7 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const MODEL = 'google/gemini-2.0-flash-exp';
+const MODEL = 'google/gemini-3.5-flash-lite';
 
 function getSupabase() {
   return createClient(
