@@ -45,8 +45,15 @@ module.exports = async (req, res) => {
   tgPost('sendChatAction', { chat_id: chatId, action: 'typing' });
 
   const history = await getSession(chatId);
-  const { reply, updatedMessages } = await processMessage(text, history, 'telegram');
-  await saveSession(chatId, updatedMessages);
+
+  let reply = 'متأسفم، مشکلی پیش آمد. لطفاً دوباره تلاش کنید.';
+  try {
+    const result = await processMessage(text, history, 'telegram');
+    reply = result.reply;
+    await saveSession(chatId, result.updatedMessages);
+  } catch (err) {
+    console.error('[telegram] processMessage error:', err.message, err.stack);
+  }
 
   await tgPost('sendMessage', {
     chat_id: chatId,
