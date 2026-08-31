@@ -4,7 +4,10 @@ const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'google/gemini-2.0-flash-exp';
 
 function getSupabase() {
-  return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+  return createClient(
+    process.env.SUPABASE_URL?.trim(),
+    process.env.SUPABASE_SERVICE_KEY?.trim()
+  );
 }
 
 const SYSTEM_PROMPT = `تو دستیار هوشمند آموزشگاه موسیقی زنگوله در تورنتو، کانادا هستی.
@@ -64,7 +67,7 @@ async function callOpenRouter(messages) {
   const res = await fetch(OPENROUTER_URL, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY?.trim()}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': 'https://zangoulehmusicschool.com',
       'X-Title': 'Zangouleh Music School'
