@@ -106,9 +106,12 @@ async function searchKnowledge(query) {
 async function captureLead(input, source) {
   try {
     const sb = getSupabase();
-    await sb.from('leads').insert({ ...input, source });
+    const { error } = await sb.from('leads').insert({ ...input, source });
+    if (error) throw error;
+    console.log('[captureLead] saved:', JSON.stringify(input));
     return 'اطلاعات ذخیره شد. تیم زنگوله به زودی با شما تماس خواهد گرفت.';
-  } catch {
+  } catch (err) {
+    console.error('[captureLead] failed:', err.message);
     return 'خطا در ذخیره. لطفاً مستقیماً با +1 647 827 6462 تماس بگیرید.';
   }
 }
@@ -155,6 +158,7 @@ async function processMessage(message, history = [], source = 'web') {
 
   let response = await callOpenRouter(msgs);
   let choice = response.choices[0];
+  console.log('[processMessage] finish_reason:', choice.finish_reason, 'tool_calls:', JSON.stringify(choice.message?.tool_calls || []));
 
   // Tool-use loop
   while (choice.finish_reason === 'tool_calls' && choice.message?.tool_calls?.length) {
