@@ -3,16 +3,6 @@
 -- این فایل را در Supabase SQL Editor اجرا کنید
 -- ══════════════════════════════════════════════════
 
--- helper: check if current user is admin (SECURITY DEFINER avoids RLS recursion)
-CREATE OR REPLACE FUNCTION is_admin()
-RETURNS boolean
-LANGUAGE sql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin');
-$$;
-
 -- ۱. پروفایل کاربران (دانش‌آموز / استاد / ادمین)
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -24,6 +14,17 @@ CREATE TABLE IF NOT EXISTS profiles (
   teacher_id UUID REFERENCES profiles(id),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- helper: check if current user is admin (SECURITY DEFINER avoids RLS recursion)
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin');
+$$;
+
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "own profile" ON profiles FOR SELECT USING (id = auth.uid());
