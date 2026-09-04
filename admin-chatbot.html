@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>پنل مدیریت چت‌بات | Zangouleh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+*{box-sizing:border-box}
+:root{--burgundy:#822331;--yellow:#f0d060;--yellow-dark:#e8c840;--ink:#1a1a1a;--ink-mid:#444;--ink-soft:#777;--bg:#fdf8ec}
+body{margin:0;font-family:'Noto Sans Arabic',Tahoma,sans-serif;background:var(--bg);color:var(--ink)}
+nav{background:var(--burgundy);padding:0.9rem 1.5rem;display:flex;align-items:center;gap:1rem}
+.nav-logo{color:var(--yellow);font-family:'Raleway',sans-serif;font-weight:700;font-size:1.05rem;text-decoration:none}
+.nav-back{color:var(--yellow);text-decoration:none;font-size:0.78rem;opacity:0.85;margin-right:auto}
+.nav-back:hover{opacity:1}
+
+#loading{text-align:center;padding:4rem 2rem}
+.spin{display:inline-block;width:36px;height:36px;border:3px solid rgba(130,35,49,.2);border-top-color:var(--burgundy);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#login-box{max-width:400px;margin:3rem auto;padding:0 1rem}
+.login-error{background:#fff0f0;border:1px solid #f5c6cb;color:#721c24;padding:.6rem 1rem;border-radius:4px;font-size:.82rem;margin-bottom:1rem;display:none}
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:.82rem;font-weight:600;margin-bottom:.3rem;color:var(--ink-mid)}
+.form-input{width:100%;padding:.6rem .8rem;border:1.5px solid rgba(130,35,49,.25);border-radius:5px;font-size:.88rem;font-family:inherit;background:#fff}
+.form-input:focus{outline:none;border-color:var(--burgundy)}
+.btn-primary{background:var(--burgundy);color:var(--yellow);border:none;padding:.7rem 1.2rem;border-radius:5px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-primary:hover{opacity:.9}
+
+#denied{text-align:center;padding:4rem 2rem;color:var(--ink-soft)}
+
+.dash-header{background:var(--burgundy);color:var(--yellow);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+.dash-header h2{font-family:'Raleway',sans-serif;font-size:1.25rem;margin:0}
+.dash-signout{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:var(--yellow);padding:.4rem 1rem;border-radius:4px;cursor:pointer;font-size:.8rem;font-family:inherit}
+.dash-signout:hover{background:rgba(255,255,255,.25)}
+.dash-body{padding:1.5rem;max-width:1150px;margin:0 auto}
+
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem}
+.dash-stat{background:var(--yellow-dark);border:2px solid rgba(130,35,49,.15);border-radius:6px;padding:1.1rem 1.4rem}
+.dash-stat-num{font-family:'Raleway',sans-serif;font-size:1.8rem;font-weight:700;color:var(--burgundy)}
+.dash-stat-label{font-size:.76rem;color:var(--ink-soft);margin-top:.2rem}
+
+.tabs{display:flex;gap:.4rem;margin-bottom:1.25rem;flex-wrap:wrap;border-bottom:2px solid rgba(130,35,49,.15)}
+.tab-btn{background:none;border:none;padding:.6rem 1.1rem;font-size:.86rem;font-weight:600;font-family:inherit;cursor:pointer;color:var(--ink-soft);border-bottom:2px solid transparent;margin-bottom:-2px}
+.tab-btn.active{color:var(--burgundy);border-bottom-color:var(--burgundy)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+.dash-table-wrap{overflow-x:auto;margin-bottom:1.5rem;background:#fff;border-radius:6px;border:1.5px solid rgba(130,35,49,.12)}
+table.dash-table{width:100%;border-collapse:collapse;font-size:.82rem}
+table.dash-table th{background:var(--burgundy);color:var(--yellow);padding:.6rem .8rem;text-align:right;font-weight:600;white-space:nowrap}
+table.dash-table td{padding:.6rem .8rem;border-bottom:1px solid rgba(130,35,49,.08);vertical-align:top}
+table.dash-table tr:hover td{background:rgba(246,235,138,.25)}
+.cell-trunc{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-sm{padding:.28rem .65rem;border:none;border-radius:4px;font-size:.74rem;cursor:pointer;font-family:inherit}
+.btn-edit{background:#d1ecf1;color:#0c5460}
+.btn-del{background:#f8d7da;color:#721c24}
+.btn-view{background:var(--yellow);color:var(--burgundy)}
+
+.kb-form{background:var(--yellow-dark);border:2px solid rgba(130,35,49,.15);border-radius:6px;padding:1.25rem;margin-bottom:1.25rem;display:none}
+.kb-form.open{display:block}
+.kb-form textarea{min-height:100px;resize:vertical;font-family:inherit}
+.kb-form-actions{display:flex;gap:.6rem;align-items:center;margin-top:.6rem}
+.msg-fb{font-size:.8rem;color:var(--burgundy)}
+
+.btn-add{background:var(--burgundy);color:var(--yellow);border:none;padding:.5rem 1rem;border-radius:5px;font-size:.83rem;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:1rem}
+.btn-add:hover{opacity:.9}
+
+/* conversation viewer */
+#convo-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;align-items:center;justify-content:center;padding:1rem}
+#convo-modal.open{display:flex}
+.convo-box{background:#fff;border-radius:8px;max-width:560px;width:100%;max-height:80vh;display:flex;flex-direction:column;overflow:hidden}
+.convo-head{background:var(--burgundy);color:var(--yellow);padding:.8rem 1.1rem;display:flex;justify-content:space-between;align-items:center}
+.convo-close{background:none;border:none;color:var(--yellow);font-size:1.2rem;cursor:pointer}
+.convo-body{padding:1rem;overflow-y:auto;display:flex;flex-direction:column;gap:.6rem}
+.msg{max-width:80%;padding:.55rem .8rem;border-radius:10px;font-size:.83rem;line-height:1.5}
+.msg.bot{background:#f4f4f4;align-self:flex-end}
+.msg.user{background:var(--burgundy);color:var(--yellow);align-self:flex-start}
+
+.empty-note{text-align:center;color:var(--ink-soft);padding:2rem;font-size:.85rem}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">Zangouleh <span style="opacity:.7;font-weight:400;font-size:.7rem">پنل مدیریت چت‌بات</span></a>
+  <a href="portal.html" class="nav-back">← پورتال</a>
+</nav>
+
+<div id="loading"><div class="spin"></div><p style="color:var(--ink-soft);font-size:.85rem;margin-top:1rem">در حال بارگذاری…</p></div>
+
+<div id="login-box" style="display:none">
+  <h2 style="font-family:'Raleway',sans-serif;color:var(--burgundy);text-align:center;margin-bottom:.3rem">ورود مدیر</h2>
+  <p style="text-align:center;font-size:.82rem;color:var(--ink-soft);margin-bottom:1.5rem">ورود اختصاصی پنل مدیریت چت‌بات</p>
+  <div class="login-error" id="login-error"></div>
+  <form onsubmit="handleLogin(event)">
+    <div class="form-group"><label class="form-label">ایمیل</label><input type="email" id="login-email" class="form-input" required></div>
+    <div class="form-group"><label class="form-label">رمز عبور</label><input type="password" id="login-password" class="form-input" required></div>
+    <button type="submit" class="btn-primary" style="width:100%" id="login-btn">ورود</button>
+  </form>
+</div>
+
+<div id="denied" style="display:none">
+  <p>⛔ شما دسترسی مدیریتی ندارید.</p>
+  <p><a href="portal.html" style="color:var(--burgundy)">بازگشت به پورتال</a></p>
+</div>
+
+<div id="dashboard" style="display:none">
+  <div class="dash-header">
+    <h2>پنل مدیریت چت‌بات</h2>
+    <button class="dash-signout" onclick="signOut()">خروج</button>
+  </div>
+  <div class="dash-body">
+    <div class="dash-grid">
+      <div class="dash-stat"><div class="dash-stat-num" id="stat-leads">–</div><div class="dash-stat-label">لیدهای ثبت‌شده</div></div>
+      <div class="dash-stat"><div class="dash-stat-num" id="stat-kb">–</div><div class="dash-stat-label">مقالات پایگاه دانش</div></div>
+      <div class="dash-stat"><div class="dash-stat-num" id="stat-sessions">–</div><div class="dash-stat-label">مکالمات تلگرام</div></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('leads')">لیدها</button>
+      <button class="tab-btn" onclick="showTab('kb')">پایگاه دانش</button>
+      <button class="tab-btn" onclick="showTab('convo')">مکالمات</button>
+    </div>
+
+    <!-- LEADS -->
+    <div class="tab-panel active" id="tab-leads">
+      <div class="dash-table-wrap">
+        <table class="dash-table">
+          <thead><tr><th>نام</th><th>تلفن</th><th>ایمیل</th><th>ساز/برنامه</th><th>منبع</th><th>یادداشت</th><th>تاریخ</th><th>حذف</th></tr></thead>
+          <tbody id="leads-body"><tr><td colspan="8" class="empty-note">در حال بارگذاری…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- KNOWLEDGE BASE -->
+    <div class="tab-panel" id="tab-kb">
+      <button class="btn-add" onclick="openKbForm()">+ افزودن مقاله جدید</button>
+      <div class="kb-form" id="kb-form">
+        <input type="hidden" id="kb-id">
+        <div class="form-group"><label class="form-label">عنوان</label><input type="text" id="kb-title" class="form-input"></div>
+        <div class="form-group"><label class="form-label">محتوا</label><textarea id="kb-content" class="form-input"></textarea></div>
+        <div class="kb-form-actions">
+          <button class="btn-primary" onclick="saveKb()">ذخیره</button>
+          <button class="btn-sm" onclick="closeKbForm()" style="background:#eee">انصراف</button>
+          <span class="msg-fb" id="kb-msg"></span>
+        </div>
+      </div>
+      <div class="dash-table-wrap">
+        <table class="dash-table">
+          <thead><tr><th>عنوان</th><th>محتوا</th><th>عملیات</th></tr></thead>
+          <tbody id="kb-body"><tr><td colspan="3" class="empty-note">در حال بارگذاری…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CONVERSATIONS -->
+    <div class="tab-panel" id="tab-convo">
+      <div class="dash-table-wrap">
+        <table class="dash-table">
+          <thead><tr><th>شناسه</th><th>تعداد پیام</th><th>آخرین پیام</th><th>آخرین فعالیت</th><th></th></tr></thead>
+          <tbody id="convo-body"><tr><td colspan="5" class="empty-note">در حال بارگذاری…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="convo-modal">
+  <div class="convo-box">
+    <div class="convo-head"><span>گفتگو</span><button class="convo-close" onclick="closeConvo()">✕</button></div>
+    <div class="convo-body" id="convo-body-msgs"></div>
+  </div>
+</div>
+
+<script>
+const API = '/api/admin';
+let accessToken = null;
+
+async function callApi(action, payload = {}) {
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+    body: JSON.stringify({ action, payload })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'خطا');
+  return data;
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-error');
+  btn.textContent = 'در حال ورود…'; btn.disabled = true; err.style.display = 'none';
+  const { data, error } = await sb.auth.signInWithPassword({
+    email: document.getElementById('login-email').value.trim(),
+    password: document.getElementById('login-password').value
+  });
+  if (error) { err.textContent = error.message; err.style.display = 'block'; btn.textContent = 'ورود'; btn.disabled = false; return; }
+  await init(data.session);
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  location.reload();
+}
+
+async function init(session) {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('login-box').style.display = 'none';
+  if (!session) { document.getElementById('login-box').style.display = 'block'; return; }
+
+  const { data: profile } = await sb.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
+  if (profile?.role !== 'admin') { document.getElementById('denied').style.display = 'block'; return; }
+
+  accessToken = session.access_token;
+  document.getElementById('dashboard').style.display = 'block';
+  loadStats();
+  loadLeads();
+  loadKb();
+  loadConvos();
+}
+
+function showTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+async function loadStats() {
+  try {
+    const s = await callApi('stats');
+    document.getElementById('stat-leads').textContent = s.leads;
+    document.getElementById('stat-kb').textContent = s.kb;
+    document.getElementById('stat-sessions').textContent = s.sessions;
+  } catch {}
+}
+
+// ── LEADS ──
+async function loadLeads() {
+  const body = document.getElementById('leads-body');
+  try {
+    const { data } = await callApi('list_leads');
+    body.innerHTML = data.length ? data.map(l => `
+      <tr>
+        <td>${esc(l.name)}</td><td>${esc(l.phone)}</td><td>${esc(l.email)}</td>
+        <td>${esc(l.instrument)}</td><td>${esc(l.source)}</td><td>${esc(l.notes)}</td>
+        <td>${l.created_at ? new Date(l.created_at).toLocaleDateString('fa-IR') : '–'}</td>
+        <td><button class="btn-sm btn-del" onclick="deleteLead(${l.id})">حذف</button></td>
+      </tr>`).join('') : '<tr><td colspan="8" class="empty-note">هنوز لیدی ثبت نشده.</td></tr>';
+  } catch (e) { body.innerHTML = `<tr><td colspan="8" class="empty-note">خطا: ${e.message}</td></tr>`; }
+}
+
+async function deleteLead(id) {
+  if (!confirm('این لید حذف شود؟')) return;
+  await callApi('delete_lead', { id });
+  loadLeads(); loadStats();
+}
+
+// ── KNOWLEDGE BASE ──
+let kbCache = [];
+async function loadKb() {
+  const body = document.getElementById('kb-body');
+  try {
+    const { data } = await callApi('list_kb');
+    kbCache = data;
+    body.innerHTML = data.length ? data.map(k => `
+      <tr>
+        <td>${esc(k.title)}</td>
+        <td class="cell-trunc" title="${escAttr(k.content)}">${esc(k.content)}</td>
+        <td>
+          <button class="btn-sm btn-edit" onclick="editKb(${k.id})">ویرایش</button>
+          <button class="btn-sm btn-del" onclick="deleteKb(${k.id})">حذف</button>
+        </td>
+      </tr>`).join('') : '<tr><td colspan="3" class="empty-note">مقاله‌ای وجود ندارد.</td></tr>';
+  } catch (e) { body.innerHTML = `<tr><td colspan="3" class="empty-note">خطا: ${e.message}</td></tr>`; }
+}
+
+function openKbForm() {
+  document.getElementById('kb-id').value = '';
+  document.getElementById('kb-title').value = '';
+  document.getElementById('kb-content').value = '';
+  document.getElementById('kb-msg').textContent = '';
+  document.getElementById('kb-form').classList.add('open');
+}
+function closeKbForm() { document.getElementById('kb-form').classList.remove('open'); }
+
+function editKb(id) {
+  const k = kbCache.find(x => x.id === id);
+  if (!k) return;
+  document.getElementById('kb-id').value = k.id;
+  document.getElementById('kb-title').value = k.title;
+  document.getElementById('kb-content').value = k.content;
+  document.getElementById('kb-msg').textContent = '';
+  document.getElementById('kb-form').classList.add('open');
+}
+
+async function saveKb() {
+  const id = document.getElementById('kb-id').value;
+  const title = document.getElementById('kb-title').value.trim();
+  const content = document.getElementById('kb-content').value.trim();
+  const msg = document.getElementById('kb-msg');
+  if (!title || !content) { msg.textContent = 'عنوان و محتوا الزامی است.'; return; }
+  try {
+    if (id) await callApi('update_kb', { id, title, content });
+    else await callApi('create_kb', { title, content });
+    msg.textContent = '✓ ذخیره شد';
+    loadKb(); loadStats();
+    setTimeout(closeKbForm, 600);
+  } catch (e) { msg.textContent = 'خطا: ' + e.message; }
+}
+
+async function deleteKb(id) {
+  if (!confirm('این مقاله حذف شود؟')) return;
+  await callApi('delete_kb', { id });
+  loadKb(); loadStats();
+}
+
+// ── CONVERSATIONS ──
+async function loadConvos() {
+  const body = document.getElementById('convo-body');
+  try {
+    const { data } = await callApi('list_sessions');
+    body.innerHTML = data.length ? data.map(s => `
+      <tr>
+        <td>${esc(s.id)}</td><td>${s.message_count}</td>
+        <td class="cell-trunc" title="${escAttr(s.last_message)}">${esc(s.last_message)}</td>
+        <td>${s.updated_at ? new Date(s.updated_at).toLocaleString('fa-IR') : '–'}</td>
+        <td><button class="btn-sm btn-view" onclick="viewConvo('${s.id}')">مشاهده</button></td>
+      </tr>`).join('') : '<tr><td colspan="5" class="empty-note">هنوز مکالمه‌ای ثبت نشده.</td></tr>';
+  } catch (e) { body.innerHTML = `<tr><td colspan="5" class="empty-note">خطا: ${e.message}</td></tr>`; }
+}
+
+async function viewConvo(id) {
+  const { data } = await callApi('get_session', { id });
+  const box = document.getElementById('convo-body-msgs');
+  const msgs = (data?.messages || []).filter(m => typeof m.content === 'string');
+  box.innerHTML = msgs.length ? msgs.map(m => `<div class="msg ${m.role === 'user' ? 'user' : 'bot'}">${esc(m.content)}</div>`).join('') : '<p class="empty-note">پیامی یافت نشد.</p>';
+  document.getElementById('convo-modal').classList.add('open');
+}
+function closeConvo() { document.getElementById('convo-modal').classList.remove('open'); }
+
+function esc(s) { return String(s ?? '–').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s) { return esc(s).replace(/"/g,'&quot;'); }
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  await init(session);
+});
+</script>
+</body>
+</html>
