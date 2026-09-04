@@ -30,6 +30,11 @@ CREATE TRIGGER on_auth_user_created
 CREATE POLICY "admin update profiles" ON profiles FOR UPDATE USING (is_admin());
 
 -- ۳. استاد می‌تواند یک هنرجوی بدون استاد (یا هنرجوی خودش) را به خودش نسبت دهد
+-- (Postgres RLS برای UPDATE نیاز دارد ردیف از طریق یک SELECT policy هم قابل دیدن باشد،
+--  وگرنه اصلاً پیدا نمی‌شود — بدون این policy، UPDATE همیشه ۰ ردیف برمی‌گرداند)
+CREATE POLICY "teacher see unclaimed students" ON profiles FOR SELECT
+  USING (role = 'student' AND teacher_id IS NULL);
+
 CREATE POLICY "teacher claim student" ON profiles FOR UPDATE
   USING (role = 'student' AND (teacher_id IS NULL OR teacher_id = auth.uid()))
   WITH CHECK (role = 'student' AND teacher_id = auth.uid());
