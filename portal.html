@@ -81,7 +81,26 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
         <div class="form-group"><label class="form-label">Password</label><input type="password" id="login-password" class="form-input" placeholder="••••••••" required></div>
         <button type="submit" class="btn-primary" style="width:100%;margin-top:.5rem" id="login-btn">Sign In</button>
       </form>
-      <p style="text-align:center;font-size:.78rem;color:var(--ink-soft);margin-top:1.5rem">Don't have access? <a href="contact.html" style="color:var(--burgundy)">Contact the school</a> to get your account.</p>
+      <p style="text-align:center;font-size:.78rem;color:var(--ink-soft);margin-top:1.5rem">New student? <a href="#" onclick="showSignup(event)" style="color:var(--burgundy)">Create an account</a></p>
+    </div>
+  </div>
+
+  <!-- SIGN UP -->
+  <div id="portal-signup" style="display:none" class="page-content">
+    <div id="portal-signup-inner">
+      <p style="font-size:.8rem;color:var(--ink-soft);text-align:center;margin-bottom:.5rem">Members Area · پورتال اعضا</p>
+      <h2 style="font-family:var(--font-display);font-size:1.8rem;color:var(--burgundy);font-style:italic;text-align:center;margin-bottom:.3rem">Create Account</h2>
+      <p style="text-align:center;font-size:.82rem;color:var(--ink-soft);margin-bottom:2rem">Sign up to see your attendance and payment history.</p>
+      <div class="login-error" id="signup-error"></div>
+      <div class="login-error" id="signup-success" style="background:#d4edda;border-color:#c3e6cb;color:#155724;"></div>
+      <form onsubmit="handleSignup(event)">
+        <div class="form-group"><label class="form-label">Full Name</label><input type="text" id="signup-name" class="form-input" required></div>
+        <div class="form-group"><label class="form-label">Email Address</label><input type="email" id="signup-email" class="form-input" placeholder="your@email.com" required></div>
+        <div class="form-group"><label class="form-label">Password</label><input type="password" id="signup-password" class="form-input" placeholder="At least 6 characters" minlength="6" required></div>
+        <div class="form-group"><label class="form-label">Confirm Password</label><input type="password" id="signup-password2" class="form-input" required></div>
+        <button type="submit" class="btn-primary" style="width:100%;margin-top:.5rem" id="signup-btn">Create Account</button>
+      </form>
+      <p style="text-align:center;font-size:.78rem;color:var(--ink-soft);margin-top:1.5rem">Already have an account? <a href="#" onclick="showLogin(event)" style="color:var(--burgundy)">Sign in</a></p>
     </div>
   </div>
 
@@ -148,6 +167,33 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
         <div class="dash-grid">
           <div class="dash-stat"><div class="dash-stat-num" id="t-stat-students">–</div><div class="dash-stat-label">My Students</div></div>
           <div class="dash-stat"><div class="dash-stat-num" id="t-stat-sessions">–</div><div class="dash-stat-label">Sessions This Month</div></div>
+        </div>
+
+        <div class="dash-section-title">Add Student to My Roster</div>
+        <div class="dash-form">
+          <div class="dash-form-row">
+            <div><label>Student Email (must have already signed up)</label><input type="email" id="claim-student-email" placeholder="student@email.com"></div>
+            <div><label>Instrument</label><input type="text" id="claim-instrument" placeholder="Santour"></div>
+          </div>
+          <div class="dash-form-actions">
+            <button class="btn-dash btn-dash-primary" onclick="claimStudent()">Add Student</button>
+            <span id="claim-msg" style="font-size:.8rem;color:var(--burgundy)"></span>
+          </div>
+        </div>
+
+        <div class="dash-section-title">Record Payment</div>
+        <div class="dash-form">
+          <div class="dash-form-row">
+            <div><label>Student Email</label><input type="email" id="t-pay-student-email" placeholder="student@email.com"></div>
+            <div><label>Amount (CAD $)</label><input type="number" id="t-pay-amount" placeholder="240"></div>
+            <div><label>Package</label><select id="t-pay-package"><option value="consultation">Consultation</option><option value="4-session">4-Session</option><option value="12-session">12-Session Term</option></select></div>
+            <div><label>Status</label><select id="t-pay-status"><option value="paid">Paid</option><option value="pending">Pending</option><option value="overdue">Overdue</option></select></div>
+            <div><label>Due Date</label><input type="date" id="t-pay-due-date"></div>
+          </div>
+          <div class="dash-form-actions">
+            <button class="btn-dash btn-dash-primary" onclick="teacherUpsertPayment()">Save Payment</button>
+            <span id="t-pay-msg" style="font-size:.8rem;color:var(--burgundy)"></span>
+          </div>
         </div>
 
         <div class="dash-section-title">Record Attendance</div>
@@ -233,12 +279,48 @@ async function handleLogin(e){
   loadDashboard(data.user);
 }
 
+function showSignup(e){
+  e.preventDefault();
+  document.getElementById('portal-login').style.display='none';
+  document.getElementById('portal-signup').style.display='block';
+}
+function showLogin(e){
+  e.preventDefault();
+  document.getElementById('portal-signup').style.display='none';
+  document.getElementById('portal-login').style.display='block';
+}
+
+async function handleSignup(e){
+  e.preventDefault();
+  const btn=document.getElementById('signup-btn');
+  const err=document.getElementById('signup-error');
+  const ok=document.getElementById('signup-success');
+  err.style.display='none';ok.style.display='none';
+  const fullName=document.getElementById('signup-name').value.trim();
+  const email=document.getElementById('signup-email').value.trim();
+  const password=document.getElementById('signup-password').value;
+  const password2=document.getElementById('signup-password2').value;
+  if(password!==password2){err.textContent='Passwords do not match.';err.style.display='block';return;}
+  btn.textContent='Creating…';btn.disabled=true;
+  const {data,error}=await sb.auth.signUp({
+    email,password,
+    options:{data:{full_name:fullName}}
+  });
+  btn.textContent='Create Account';btn.disabled=false;
+  if(error){err.textContent=error.message;err.style.display='block';return;}
+  if(data.session){loadDashboard(data.user);return;}
+  ok.textContent='Account created! Please check your email to confirm, then sign in.';
+  ok.style.display='block';
+  document.querySelector('#portal-signup form').reset();
+}
+
 async function signOut(){
   await sb.auth.signOut();
   document.getElementById('portal-dashboard').style.display='none';
   document.getElementById('dash-admin').style.display='none';
   document.getElementById('dash-teacher').style.display='none';
   document.getElementById('dash-student').style.display='none';
+  document.getElementById('portal-signup').style.display='none';
   document.getElementById('portal-login').style.display='block';
 }
 
@@ -251,6 +333,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
 
 async function loadDashboard(user){
   document.getElementById('portal-login').style.display='none';
+  document.getElementById('portal-signup').style.display='none';
   document.getElementById('portal-dashboard').style.display='block';
   const {data:profile}=await sb.from('profiles').select('*').eq('id',user.id).single();
   const role=profile?.role||'student';
@@ -336,6 +419,39 @@ async function loadTeacherData(user){
     const last=att.sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
     return `<tr><td>${s.full_name||'–'}</td><td>${s.instrument||'–'}</td><td>${att.filter(a=>a.status==='present').length}</td><td>${last?last.date:'–'}</td><td>${last?.notes||'–'}</td></tr>`;
   }).join('');
+}
+
+async function claimStudent(){
+  const {data:{session}}=await sb.auth.getSession();
+  const email=document.getElementById('claim-student-email').value.trim();
+  const instrument=document.getElementById('claim-instrument').value.trim();
+  const msg=document.getElementById('claim-msg');
+  if(!email){msg.textContent='Student email required.';return;}
+  const {data:teacherProfile}=await sb.from('profiles').select('full_name').eq('id',session.user.id).single();
+  const update={teacher_id:session.user.id};
+  if(instrument)update.instrument=instrument;
+  if(teacherProfile?.full_name)update.teacher_name=teacherProfile.full_name;
+  const {data,error}=await sb.from('profiles').update(update).eq('email',email).eq('role','student').select();
+  if(error){msg.textContent='Error: '+error.message;return;}
+  if(!data?.length){msg.textContent='Student not found, already assigned to another teacher, or has not signed up yet.';return;}
+  msg.textContent='✓ Student added!';
+  document.getElementById('claim-student-email').value='';
+  document.getElementById('claim-instrument').value='';
+  loadTeacherData(session.user);
+  setTimeout(()=>{msg.textContent='';},3000);
+}
+
+async function teacherUpsertPayment(){
+  const email=document.getElementById('t-pay-student-email').value.trim();
+  const amount=document.getElementById('t-pay-amount').value;
+  const pkg=document.getElementById('t-pay-package').value;
+  const status=document.getElementById('t-pay-status').value;
+  const due=document.getElementById('t-pay-due-date').value;
+  const msg=document.getElementById('t-pay-msg');
+  if(!email||!amount){msg.textContent='Email and amount required.';return;}
+  const {error}=await sb.from('payments').insert({student_email:email,amount:parseFloat(amount),package:pkg,status,due_date:due||null});
+  if(error){msg.textContent='Error: '+error.message;}
+  else{msg.textContent='✓ Saved!';setTimeout(()=>{msg.textContent='';},3000);}
 }
 
 async function recordAttendance(){
