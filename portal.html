@@ -507,11 +507,15 @@ async function loadPayroll(){
   const monthStart=`${y}-${String(m).padStart(2,'0')}-01`;
   const nextMonth=m===12?`${y+1}-01-01`:`${y}-${String(m+1).padStart(2,'0')}-01`;
 
+  // Attendance is fetched WITHOUT a date filter — free unexcused-absence
+  // passes are counted cumulatively from the package's start_date (the
+  // whole term), not reset each month, so we need the full history to
+  // know how many free passes were already used before this month.
   const [{data:teachers},{data:students},{data:payments},{data:attendance}]=await Promise.all([
     sb.from('profiles').select('*').eq('role','teacher'),
     sb.from('profiles').select('*').eq('role','student').not('teacher_id','is',null),
     sb.from('payments').select('*'),
-    sb.from('attendance').select('*').gte('date',monthStart).lt('date',nextMonth)
+    sb.from('attendance').select('*')
   ]);
 
   if(!teachers?.length){body.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:2rem">No teachers yet.</td></tr>';return;}
@@ -525,12 +529,18 @@ async function loadPayroll(){
       if(!studentPayments.length)return;
       const pkg=studentPayments.sort((a,b)=>new Date(b.start_date||b.created_at)-new Date(a.start_date||a.created_at))[0];
       const rate=pkg.amount/pkg.total_sessions;
-      const att=(attendance||[]).filter(a=>a.student_id===s.id);
-      const presentCount=att.filter(a=>a.status==='present').length;
-      const unexcusedCount=att.filter(a=>a.status==='unexcused').length;
+      const termStart=pkg.start_date||pkg.created_at;
       const freePasses=pkg.package==='12-session'?2:0;
-      const chargeableUnexcused=Math.max(0,unexcusedCount-freePasses);
-      const studentBillable=presentCount+chargeableUnexcused;
+
+      const allTermAtt=(attendance||[]).filter(a=>a.student_id===s.id&&a.date>=termStart);
+      const beforeMonth=allTermAtt.filter(a=>a.date<monthStart);
+      const throughMonth=allTermAtt.filter(a=>a.date<nextMonth);
+      const chargeableBefore=Math.max(0,beforeMonth.filter(a=>a.status==='unexcused').length-freePasses);
+      const chargeableThrough=Math.max(0,throughMonth.filter(a=>a.status==='unexcused').length-freePasses);
+      const chargeableUnexcusedThisMonth=chargeableThrough-chargeableBefore;
+      const presentThisMonth=allTermAtt.filter(a=>a.date>=monthStart&&a.date<nextMonth&&a.status==='present').length;
+
+      const studentBillable=presentThisMonth+chargeableUnexcusedThisMonth;
       const studentRevenue=studentBillable*rate;
       const teacherPct=s.enrolled_via==='instructor'?0.70:0.60;
       billable+=studentBillable;
