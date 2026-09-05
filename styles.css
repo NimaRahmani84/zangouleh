@@ -272,7 +272,9 @@ nav {
 .home-main { flex:1; display:flex; flex-direction:column; }
 .home-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  grid-template-columns: repeat(7, minmax(120px, 1fr));
+  max-width: 1180px;
+  margin: 0 auto;
   gap: 1rem;
   padding: 1.5rem 2rem 2rem;
   flex: 1;
@@ -566,6 +568,7 @@ footer { background:var(--burgundy); padding:3rem 2rem; text-align:center; flex-
   .two-col { grid-template-columns:1fr; gap:2.5rem; }
   .event-item { grid-template-columns:64px 1fr; }
   .event-type { display:none; }
+  .home-grid { grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); max-width:none; }
 }
 @media (max-width:600px) {
   .container { padding:0 1.25rem; }
