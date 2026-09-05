@@ -21,6 +21,7 @@ nav{background:var(--burgundy);padding:0.9rem 1.5rem;display:flex;align-items:ce
 @keyframes spin{to{transform:rotate(360deg)}}
 
 #login-box{max-width:400px;margin:3rem auto;padding:0 1rem}
+#forgot-box{max-width:400px;margin:3rem auto;padding:0 1rem}
 .login-error{background:#fff0f0;border:1px solid #f5c6cb;color:#721c24;padding:.6rem 1rem;border-radius:4px;font-size:.82rem;margin-bottom:1rem;display:none}
 .form-group{margin-bottom:1rem}
 .form-label{display:block;font-size:.82rem;font-weight:600;margin-bottom:.3rem;color:var(--ink-mid)}
@@ -99,6 +100,19 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.25)}
     <div class="form-group"><label class="form-label">رمز عبور</label><input type="password" id="login-password" class="form-input" required></div>
     <button type="submit" class="btn-primary" style="width:100%" id="login-btn">ورود</button>
   </form>
+  <p style="text-align:center;font-size:.78rem;margin-top:1rem"><a href="#" onclick="showForgot(event)" style="color:var(--ink-soft)">رمز عبور را فراموش کرده‌اید؟</a></p>
+</div>
+
+<div id="forgot-box" style="display:none">
+  <h2 style="font-family:'Raleway',sans-serif;color:var(--burgundy);text-align:center;margin-bottom:.3rem">بازیابی رمز عبور</h2>
+  <p style="text-align:center;font-size:.82rem;color:var(--ink-soft);margin-bottom:1.5rem">ایمیل خود را وارد کنید تا لینک بازیابی ارسال شود.</p>
+  <div class="login-error" id="forgot-error"></div>
+  <div class="login-error" id="forgot-success" style="background:#d4edda;border-color:#c3e6cb;color:#155724;"></div>
+  <form onsubmit="handleForgot(event)">
+    <div class="form-group"><label class="form-label">ایمیل</label><input type="email" id="forgot-email" class="form-input" required></div>
+    <button type="submit" class="btn-primary" style="width:100%" id="forgot-btn">ارسال لینک بازیابی</button>
+  </form>
+  <p style="text-align:center;font-size:.78rem;margin-top:1rem"><a href="#" onclick="showLoginBox(event)" style="color:var(--burgundy)">بازگشت به ورود</a></p>
 </div>
 
 <div id="denied" style="display:none">
@@ -202,6 +216,35 @@ async function handleLogin(e) {
   await init(data.session);
 }
 
+function showForgot(e) {
+  e.preventDefault();
+  document.getElementById('login-box').style.display = 'none';
+  document.getElementById('forgot-box').style.display = 'block';
+}
+function showLoginBox(e) {
+  e.preventDefault();
+  document.getElementById('forgot-box').style.display = 'none';
+  document.getElementById('login-box').style.display = 'block';
+}
+
+async function handleForgot(e) {
+  e.preventDefault();
+  const btn = document.getElementById('forgot-btn');
+  const err = document.getElementById('forgot-error');
+  const ok = document.getElementById('forgot-success');
+  err.style.display = 'none'; ok.style.display = 'none';
+  const email = document.getElementById('forgot-email').value.trim();
+  btn.textContent = 'در حال ارسال…'; btn.disabled = true;
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/reset-password.html'
+  });
+  btn.textContent = 'ارسال لینک بازیابی'; btn.disabled = false;
+  if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
+  ok.textContent = 'اگر حسابی با این ایمیل وجود داشته باشد، لینک بازیابی ارسال شد.';
+  ok.style.display = 'block';
+  document.getElementById('forgot-email').value = '';
+}
+
 async function signOut() {
   await sb.auth.signOut();
   location.reload();
@@ -210,6 +253,7 @@ async function signOut() {
 async function init(session) {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('login-box').style.display = 'none';
+  document.getElementById('forgot-box').style.display = 'none';
   if (!session) { document.getElementById('login-box').style.display = 'block'; return; }
 
   const { data: profile } = await sb.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
