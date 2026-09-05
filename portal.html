@@ -149,6 +149,7 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
             <div><label>Student Email</label><input type="email" id="pay-student-email" placeholder="student@email.com"></div>
             <div><label>Amount (CAD $)</label><input type="number" id="pay-amount" placeholder="240"></div>
             <div><label>Package</label><select id="pay-package"><option value="consultation">Consultation</option><option value="4-session">4-Session</option><option value="12-session">12-Session Term</option></select></div>
+            <div><label>Total Sessions</label><input type="number" id="pay-total-sessions" placeholder="12"></div>
             <div><label>Status</label><select id="pay-status"><option value="paid">Paid</option><option value="pending">Pending</option><option value="overdue">Overdue</option></select></div>
             <div><label>Due Date</label><input type="date" id="pay-due-date"></div>
           </div>
@@ -167,10 +168,28 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
         </div>
 
         <div class="dash-section-title">All Students</div>
+        <p style="font-size:.78rem;color:var(--ink-soft);margin-top:-.5rem;margin-bottom:.75rem">"Enrolled Via" sets the teacher's payout split: School = 60% teacher / 40% school. Instructor = 70% teacher / 30% school.</p>
         <div class="dash-table-wrap">
           <table class="dash-table">
-            <thead><tr><th>Name</th><th>Email</th><th>Instrument</th><th>Teacher</th><th>Joined</th></tr></thead>
-            <tbody id="admin-students-body"><tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
+            <thead><tr><th>Name</th><th>Email</th><th>Instrument</th><th>Teacher</th><th>Enrolled Via</th><th>Joined</th></tr></thead>
+            <tbody id="admin-students-body"><tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
+          </table>
+        </div>
+
+        <div class="dash-section-title">Monthly Payroll</div>
+        <div class="dash-form">
+          <div class="dash-form-row">
+            <div><label>Month</label><input type="month" id="payroll-month"></div>
+          </div>
+          <div class="dash-form-actions">
+            <button class="btn-dash btn-dash-primary" onclick="loadPayroll()">Calculate</button>
+            <span id="payroll-msg" style="font-size:.8rem;color:var(--burgundy)"></span>
+          </div>
+        </div>
+        <div class="dash-table-wrap">
+          <table class="dash-table">
+            <thead><tr><th>Teacher</th><th>Billable Sessions</th><th>Student Revenue</th><th>Split</th><th>Teacher Payout</th><th>School Keeps</th></tr></thead>
+            <tbody id="payroll-body"><tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:2rem">Pick a month and click Calculate.</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -206,6 +225,7 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
             <div><label>Student Email</label><input type="email" id="t-pay-student-email" placeholder="student@email.com"></div>
             <div><label>Amount (CAD $)</label><input type="number" id="t-pay-amount" placeholder="240"></div>
             <div><label>Package</label><select id="t-pay-package"><option value="consultation">Consultation</option><option value="4-session">4-Session</option><option value="12-session">12-Session Term</option></select></div>
+            <div><label>Total Sessions</label><input type="number" id="t-pay-total-sessions" placeholder="12"></div>
             <div><label>Status</label><select id="t-pay-status"><option value="paid">Paid</option><option value="pending">Pending</option><option value="overdue">Overdue</option></select></div>
             <div><label>Due Date</label><input type="date" id="t-pay-due-date"></div>
           </div>
@@ -220,7 +240,7 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
           <div class="dash-form-row">
             <div><label>Student Email</label><input type="email" id="att-student-email" placeholder="student@email.com"></div>
             <div><label>Date</label><input type="date" id="att-date"></div>
-            <div><label>Status</label><select id="att-status"><option value="present">Present</option><option value="absent">Absent</option><option value="late">Late</option></select></div>
+            <div><label>Status</label><select id="att-status"><option value="present">Present</option><option value="excused">Excused Absence</option><option value="unexcused">Unexcused Absence</option></select></div>
             <div><label>Notes (optional)</label><input type="text" id="att-notes" placeholder="Practiced scales…"></div>
           </div>
           <div class="dash-form-actions">
@@ -232,7 +252,7 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
         <div class="dash-section-title">My Students</div>
         <div class="dash-table-wrap">
           <table class="dash-table">
-            <thead><tr><th>Name</th><th>Instrument</th><th>Sessions Attended</th><th>Last Session</th><th>Notes</th></tr></thead>
+            <thead><tr><th>Name</th><th>Instrument</th><th>Sessions Left</th><th>Last Session</th><th>Notes</th></tr></thead>
             <tbody id="teacher-students-body"><tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
           </table>
         </div>
@@ -247,6 +267,7 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
       </div>
       <div class="dash-body">
         <div class="dash-grid">
+          <div class="dash-stat"><div class="dash-stat-num" id="s-stat-left">–</div><div class="dash-stat-label">Sessions Left</div></div>
           <div class="dash-stat"><div class="dash-stat-num" id="s-stat-sessions">–</div><div class="dash-stat-label">Sessions Attended</div></div>
           <div class="dash-stat"><div class="dash-stat-num" id="s-stat-paid" style="font-size:1.5rem">–</div><div class="dash-stat-label">Last Tuition Paid</div></div>
           <div class="dash-stat"><div class="dash-stat-num" id="s-stat-next" style="font-size:1.2rem;color:var(--ink-mid)">–</div><div class="dash-stat-label">Next Payment Due</div></div>
@@ -284,6 +305,23 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
 
 <script>
 function toggleNav(){document.getElementById('navLinks').classList.toggle('open');}
+
+// Shared: given a student's payments + attendance rows, compute sessions left
+// in their current (most recent) package. Present + unexcused absences both
+// count against the package; excused absences are free. A 12-session package
+// forgives the first 2 unexcused absences; a 4-session package forgives none.
+function computeSessionsLeft(payments, attendance){
+  const pkgs=(payments||[]).filter(p=>p.total_sessions);
+  if(!pkgs.length)return null;
+  const pkg=pkgs.sort((a,b)=>new Date(b.start_date||b.created_at)-new Date(a.start_date||a.created_at))[0];
+  const startDate=pkg.start_date||pkg.created_at;
+  const relevant=(attendance||[]).filter(a=>a.date>=startDate);
+  const presentCount=relevant.filter(a=>a.status==='present').length;
+  const unexcusedCount=relevant.filter(a=>a.status==='unexcused').length;
+  const freePasses=pkg.package==='12-session'?2:0;
+  const chargeableUnexcused=Math.max(0,unexcusedCount-freePasses);
+  return pkg.total_sessions-(presentCount+chargeableUnexcused);
+}
 
 async function handleLogin(e){
   e.preventDefault();
@@ -424,9 +462,20 @@ async function loadAdminData(){
   sb2.innerHTML=students?.length
     ?students.map(s=>`<tr>
       <td>${s.full_name||'–'}</td><td>${s.email||'–'}</td><td>${s.instrument||'–'}</td>
-      <td>${s.teacher_name||'–'}</td><td>${s.created_at?new Date(s.created_at).toLocaleDateString():'–'}</td>
+      <td>${s.teacher_name||'–'}</td>
+      <td>
+        <select onchange="setEnrolledVia('${s.id}',this.value)" style="padding:.25rem .4rem;font-size:.8rem;border-radius:4px;border:1px solid rgba(130,35,49,.25)">
+          <option value="school" ${s.enrolled_via!=='instructor'?'selected':''}>School (60/40)</option>
+          <option value="instructor" ${s.enrolled_via==='instructor'?'selected':''}>Instructor (70/30)</option>
+        </select>
+      </td>
+      <td>${s.created_at?new Date(s.created_at).toLocaleDateString():'–'}</td>
     </tr>`).join('')
-    :'<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">No students yet.</td></tr>';
+    :'<tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:2rem">No students yet.</td></tr>';
+}
+
+async function setEnrolledVia(studentId,value){
+  await sb.from('profiles').update({enrolled_via:value}).eq('id',studentId);
 }
 
 async function markPaid(id){
@@ -438,13 +487,68 @@ async function upsertPayment(){
   const email=document.getElementById('pay-student-email').value.trim();
   const amount=document.getElementById('pay-amount').value;
   const pkg=document.getElementById('pay-package').value;
+  const totalSessions=document.getElementById('pay-total-sessions').value;
   const status=document.getElementById('pay-status').value;
   const due=document.getElementById('pay-due-date').value;
   const msg=document.getElementById('pay-msg');
   if(!email||!amount){msg.textContent='Email and amount required.';return;}
-  const {error}=await sb.from('payments').insert({student_email:email,amount:parseFloat(amount),package:pkg,status,due_date:due||null});
+  const {error}=await sb.from('payments').insert({student_email:email,amount:parseFloat(amount),package:pkg,total_sessions:totalSessions?parseInt(totalSessions):null,status,due_date:due||null});
   if(error){msg.textContent='Error: '+error.message;}
   else{msg.textContent='✓ Saved!';loadAdminData();setTimeout(()=>{msg.textContent='';},3000);}
+}
+
+// ── PAYROLL ──
+async function loadPayroll(){
+  const monthInput=document.getElementById('payroll-month').value;
+  const msg=document.getElementById('payroll-msg');
+  const body=document.getElementById('payroll-body');
+  if(!monthInput){msg.textContent='Pick a month first.';return;}
+  const [y,m]=monthInput.split('-').map(Number);
+  const monthStart=`${y}-${String(m).padStart(2,'0')}-01`;
+  const nextMonth=m===12?`${y+1}-01-01`:`${y}-${String(m+1).padStart(2,'0')}-01`;
+
+  const [{data:teachers},{data:students},{data:payments},{data:attendance}]=await Promise.all([
+    sb.from('profiles').select('*').eq('role','teacher'),
+    sb.from('profiles').select('*').eq('role','student').not('teacher_id','is',null),
+    sb.from('payments').select('*'),
+    sb.from('attendance').select('*').gte('date',monthStart).lt('date',nextMonth)
+  ]);
+
+  if(!teachers?.length){body.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:2rem">No teachers yet.</td></tr>';return;}
+
+  const rows=teachers.map(t=>{
+    const myStudents=(students||[]).filter(s=>s.teacher_id===t.id);
+    let billable=0, revenue=0, payout=0, schoolCut=0;
+    const splits=new Set();
+    myStudents.forEach(s=>{
+      const studentPayments=(payments||[]).filter(p=>p.student_email===s.email&&p.total_sessions);
+      if(!studentPayments.length)return;
+      const pkg=studentPayments.sort((a,b)=>new Date(b.start_date||b.created_at)-new Date(a.start_date||a.created_at))[0];
+      const rate=pkg.amount/pkg.total_sessions;
+      const att=(attendance||[]).filter(a=>a.student_id===s.id);
+      const presentCount=att.filter(a=>a.status==='present').length;
+      const unexcusedCount=att.filter(a=>a.status==='unexcused').length;
+      const freePasses=pkg.package==='12-session'?2:0;
+      const chargeableUnexcused=Math.max(0,unexcusedCount-freePasses);
+      const studentBillable=presentCount+chargeableUnexcused;
+      const studentRevenue=studentBillable*rate;
+      const teacherPct=s.enrolled_via==='instructor'?0.70:0.60;
+      billable+=studentBillable;
+      revenue+=studentRevenue;
+      payout+=studentRevenue*teacherPct;
+      schoolCut+=studentRevenue*(1-teacherPct);
+      splits.add(teacherPct===0.70?'70/30':'60/40');
+    });
+    return {name:t.full_name||t.email, billable, revenue, payout, schoolCut, splits:[...splits].join(', ')||'–'};
+  }).filter(r=>r.billable>0);
+
+  body.innerHTML=rows.length
+    ?rows.map(r=>`<tr>
+      <td>${r.name}</td><td>${r.billable}</td><td>$${r.revenue.toFixed(2)}</td>
+      <td>${r.splits}</td><td><b>$${r.payout.toFixed(2)}</b></td><td>$${r.schoolCut.toFixed(2)}</td>
+    </tr>`).join('')
+    :'<tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:2rem">No billable sessions in this month.</td></tr>';
+  msg.textContent='';
 }
 
 // ── TEACHER ──
@@ -460,10 +564,13 @@ async function loadTeacherData(user){
   const tbody=document.getElementById('teacher-students-body');
   if(!students?.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">No students assigned yet.</td></tr>';return;}
   const {data:allAtt}=await sb.from('attendance').select('*').in('student_id',students.map(s=>s.id));
+  const {data:allPay}=await sb.from('payments').select('*').in('student_email',students.map(s=>s.email));
   tbody.innerHTML=students.map(s=>{
     const att=(allAtt||[]).filter(a=>a.student_id===s.id);
+    const pay=(allPay||[]).filter(p=>p.student_email===s.email);
     const last=att.sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
-    return `<tr><td>${s.full_name||'–'}</td><td>${s.instrument||'–'}</td><td>${att.filter(a=>a.status==='present').length}</td><td>${last?last.date:'–'}</td><td>${last?.notes||'–'}</td></tr>`;
+    const left=computeSessionsLeft(pay,att);
+    return `<tr><td>${s.full_name||'–'}</td><td>${s.instrument||'–'}</td><td>${left===null?'–':left}</td><td>${last?last.date:'–'}</td><td>${last?.notes||'–'}</td></tr>`;
   }).join('');
 }
 
@@ -491,11 +598,12 @@ async function teacherUpsertPayment(){
   const email=document.getElementById('t-pay-student-email').value.trim();
   const amount=document.getElementById('t-pay-amount').value;
   const pkg=document.getElementById('t-pay-package').value;
+  const totalSessions=document.getElementById('t-pay-total-sessions').value;
   const status=document.getElementById('t-pay-status').value;
   const due=document.getElementById('t-pay-due-date').value;
   const msg=document.getElementById('t-pay-msg');
   if(!email||!amount){msg.textContent='Email and amount required.';return;}
-  const {error}=await sb.from('payments').insert({student_email:email,amount:parseFloat(amount),package:pkg,status,due_date:due||null});
+  const {error}=await sb.from('payments').insert({student_email:email,amount:parseFloat(amount),package:pkg,total_sessions:totalSessions?parseInt(totalSessions):null,status,due_date:due||null});
   if(error){msg.textContent='Error: '+error.message;}
   else{msg.textContent='✓ Saved!';setTimeout(()=>{msg.textContent='';},3000);}
 }
@@ -521,6 +629,8 @@ async function loadStudentData(user){
     sb.from('attendance').select('*').eq('student_id',user.id).order('date',{ascending:false}),
     sb.from('payments').select('*').eq('student_email',user.email).order('due_date',{ascending:false})
   ]);
+  const left=computeSessionsLeft(payments,att);
+  document.getElementById('s-stat-left').textContent=left===null?'–':left;
   document.getElementById('s-stat-sessions').textContent=att?.filter(a=>a.status==='present').length??0;
   const lastPaid=payments?.find(p=>p.status==='paid');
   document.getElementById('s-stat-paid').textContent=lastPaid?`$${lastPaid.amount}`:'$0';
@@ -532,7 +642,7 @@ async function loadStudentData(user){
 
   const atbody=document.getElementById('student-attendance-body');
   atbody.innerHTML=att?.length
-    ?att.map(a=>`<tr><td>${a.date}</td><td><span class="badge ${a.status==='present'?'badge-green':a.status==='absent'?'badge-red':'badge-yellow'}">${a.status}</span></td><td>${a.notes||'–'}</td></tr>`).join('')
+    ?att.map(a=>`<tr><td>${a.date}</td><td><span class="badge ${a.status==='present'?'badge-green':a.status==='unexcused'?'badge-red':'badge-yellow'}">${a.status}</span></td><td>${a.notes||'–'}</td></tr>`).join('')
     :'<tr><td colspan="3" style="text-align:center;color:var(--ink-soft);padding:2rem">No sessions recorded yet.</td></tr>';
 
   const pbody=document.getElementById('student-payments-body');
