@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="styles.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
+<script src="paypal-config.js"></script>
 <style>
 #portal-loading{text-align:center;padding:4rem 2rem}
 #portal-loading .spin{display:inline-block;width:40px;height:40px;border:3px solid rgba(130,35,49,0.2);border-top-color:var(--burgundy);border-radius:50%;animation:spin 0.8s linear infinite}
@@ -285,10 +286,23 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
         <div class="dash-section-title">Payment History</div>
         <div class="dash-table-wrap">
           <table class="dash-table">
-            <thead><tr><th>Package</th><th>Amount</th><th>Status</th><th>Due Date</th></tr></thead>
-            <tbody id="student-payments-body"><tr><td colspan="4" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
+            <thead><tr><th>Package</th><th>Amount</th><th>Status</th><th>Due Date</th><th></th></tr></thead>
+            <tbody id="student-payments-body"><tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+    <!-- PAYPAL MODAL -->
+    <div id="paypal-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;align-items:center;justify-content:center;padding:1rem">
+      <div style="background:#fff;border-radius:8px;max-width:420px;width:100%;padding:1.5rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <h3 style="font-family:var(--font-display);color:var(--burgundy);margin:0">Complete Payment</h3>
+          <button onclick="closePaypalModal()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink-soft)">✕</button>
+        </div>
+        <p id="paypal-modal-amount" style="font-size:.9rem;color:var(--ink-mid);margin-bottom:1rem"></p>
+        <div id="paypal-button-container"></div>
+        <p id="paypal-error" class="login-error" style="margin-top:.75rem"></p>
       </div>
     </div>
 
@@ -657,8 +671,77 @@ async function loadStudentData(user){
 
   const pbody=document.getElementById('student-payments-body');
   pbody.innerHTML=payments?.length
-    ?payments.map(p=>`<tr><td>${p.package||'–'}</td><td>$${p.amount}</td><td><span class="badge ${p.status==='paid'?'badge-green':p.status==='overdue'?'badge-red':'badge-yellow'}">${p.status}</span></td><td>${p.due_date||'–'}</td></tr>`).join('')
-    :'<tr><td colspan="4" style="text-align:center;color:var(--ink-soft);padding:2rem">No payment records yet.</td></tr>';
+    ?payments.map(p=>`<tr>
+      <td>${p.package||'–'}</td><td>$${p.amount}</td>
+      <td><span class="badge ${p.status==='paid'?'badge-green':p.status==='overdue'?'badge-red':'badge-yellow'}">${p.status}</span></td>
+      <td>${p.due_date||'–'}</td>
+      <td>${p.status!=='paid'?`<button class="btn-mark-paid" style="background:#0070ba" onclick="openPaypalModal(${p.id},${p.amount})">Pay Now</button>`:'–'}</td>
+    </tr>`).join('')
+    :'<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">No payment records yet.</td></tr>';
+}
+
+// ── PAYPAL ──
+let paypalSdkLoaded=false;
+function loadPaypalSdk(){
+  return new Promise((resolve,reject)=>{
+    if(paypalSdkLoaded && window.paypal){resolve();return;}
+    const script=document.createElement('script');
+    script.src=`https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=CAD`;
+    script.onload=()=>{paypalSdkLoaded=true;resolve();};
+    script.onerror=reject;
+    document.head.appendChild(script);
+  });
+}
+
+async function openPaypalModal(paymentId,amount){
+  document.getElementById('paypal-modal-amount').textContent=`Amount due: $${amount} CAD`;
+  document.getElementById('paypal-error').style.display='none';
+  document.getElementById('paypal-button-container').innerHTML='';
+  document.getElementById('paypal-modal').style.display='flex';
+
+  try{await loadPaypalSdk();}catch{
+    document.getElementById('paypal-error').textContent='Could not load PayPal. Please try again later.';
+    document.getElementById('paypal-error').style.display='block';
+    return;
+  }
+
+  const {data:{session}}=await sb.auth.getSession();
+
+  window.paypal.Buttons({
+    createOrder: async ()=>{
+      const res=await fetch('/api/paypal',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${session.access_token}`},
+        body:JSON.stringify({action:'create-order',payload:{paymentId}})
+      });
+      const data=await res.json();
+      if(!res.ok)throw new Error(data.error||'Could not start payment');
+      return data.orderID;
+    },
+    onApprove: async (data)=>{
+      const res=await fetch('/api/paypal',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${session.access_token}`},
+        body:JSON.stringify({action:'capture-order',payload:{paymentId,orderID:data.orderID}})
+      });
+      const result=await res.json();
+      if(!res.ok){
+        document.getElementById('paypal-error').textContent=result.error||'Payment could not be verified.';
+        document.getElementById('paypal-error').style.display='block';
+        return;
+      }
+      closePaypalModal();
+      loadStudentData((await sb.auth.getSession()).data.session.user);
+    },
+    onError: (err)=>{
+      document.getElementById('paypal-error').textContent='Payment error: '+err.message;
+      document.getElementById('paypal-error').style.display='block';
+    }
+  }).render('#paypal-button-container');
+}
+
+function closePaypalModal(){
+  document.getElementById('paypal-modal').style.display='none';
 }
 </script>
 </body>
