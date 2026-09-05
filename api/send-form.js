@@ -71,17 +71,19 @@ module.exports = async (req, res) => {
 </div>`;
 
   try {
+    const gmailUser = process.env.GMAIL_USER?.trim();
+    const gmailPass = process.env.GMAIL_APP_PASSWORD?.trim().replace(/\s+/g, '');
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 465,
       secure: true,
       auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD
+        user: gmailUser,
+        pass: gmailPass
       }
     });
     await transporter.sendMail({
-      from: `"Zangouleh Website" <${process.env.GMAIL_USER}>`,
+      from: `"Zangouleh Website" <${gmailUser}>`,
       to: TO.join(', '),
       subject,
       html
