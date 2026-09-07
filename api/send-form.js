@@ -52,8 +52,13 @@ module.exports = async (req, res) => {
     subject = `[Website] Third Music Ensemble Workshop — ${d.fullName}`;
     rows = [
       ['Full Name', d.fullName],
+      ['Email', d.email || '—'],
+      ['Phone', d.phone],
       ['Instrument', d.instrument],
-      ['Last Piece / Book Performed', d.lastPiece || '—']
+      ['Years Playing / Practicing', d.yearsPlaying || '—'],
+      ['Last Piece Performed', d.lastPiece || '—'],
+      ['Last Method Book Used', d.lastBook || '—'],
+      ['Piece Choice', d.pieceChoice || '—']
     ];
   } else {
     return res.status(400).json({ error: 'Unknown form type' });

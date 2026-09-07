@@ -29,18 +29,26 @@
       <p class="section-subtitle reveal" style="max-width:680px;margin-bottom:3rem">From intimate student recitals to major cultural festivals — Zangouleh students perform. Every student is a performer. Every term ends on a stage.</p>
 
       <div class="reveal" style="margin-bottom:2rem;border:2px solid var(--burgundy);border-radius:4px;padding:1.5rem;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start;background:var(--yellow)">
-        <div style="max-width:340px;width:100%;flex-shrink:0">
+        <div style="max-width:440px;width:100%;flex-shrink:0">
           <img src="images/events/3rd-ensemble-workshop.png" alt="Third Music Ensemble Workshop" style="width:100%;display:block;border-radius:4px">
-          <p style="font-size:0.85rem;color:var(--ink);line-height:1.8;margin-top:1rem">برای شرکت در این کارگاه، اسم و فامیل و نوع ساز را به این شماره از طریق واتساپ بفرستین:<br><strong style="color:var(--burgundy)">647 827 6462</strong></p>
         </div>
-        <div style="flex:1;min-width:240px">
+        <div style="flex:1;min-width:220px;max-width:300px">
           <form onsubmit="handleWorkshop(event)" id="workshop-form">
             <div class="form-group"><label class="form-label">Full Name</label><input type="text" name="fullName" class="form-input" required></div>
+            <div class="form-group"><label class="form-label">Email Address (optional)</label><input type="email" name="email" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Phone Number</label><input type="tel" name="phone" class="form-input" required></div>
             <div class="form-group"><label class="form-label">Instrument</label><input type="text" name="instrument" class="form-input" placeholder="e.g. Santour, Piano, Violin…" required></div>
-            <div class="form-group"><label class="form-label">Last Piece / Book Performed</label><input type="text" name="lastPiece" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Years Playing / Practicing</label><input type="text" name="yearsPlaying" class="form-input" placeholder="e.g. 2 years"></div>
+            <div class="form-group"><label class="form-label">Last Piece Performed</label><input type="text" name="lastPiece" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Last Method Book Used</label><input type="text" name="lastBook" class="form-input"></div>
+            <div class="form-group">
+              <label class="form-label">Choose a Piece</label>
+              <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem;margin-bottom:.4rem"><input type="radio" name="pieceChoice" value="Be Zendan (by Ostad Saba)" required> Be Zendan — by Ostad Saba</label>
+              <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem"><input type="radio" name="pieceChoice" value="Yourtmeh (by Nima Rahmani)" required> Yourtmeh — by Nima Rahmani</label>
+            </div>
             <button type="submit" class="btn-primary" style="width:100%">Submit</button>
           </form>
-          <div id="workshop-success" class="form-success" style="display:none">✓ Thank you! We received your info and will contact you.</div>
+          <div id="workshop-success" class="form-success" style="display:none">✓ Thank you! The school will contact you to coordinate timing and when the term begins.</div>
         </div>
       </div>
 
@@ -91,7 +99,7 @@ async function handleWorkshop(e){
   var orig=btn.textContent;
   btn.disabled=true; btn.textContent='Sending…';
   var fd=new FormData(e.target);
-  var data={formType:'workshop',fullName:fd.get('fullName'),instrument:fd.get('instrument'),lastPiece:fd.get('lastPiece')};
+  var data={formType:'workshop',fullName:fd.get('fullName'),email:fd.get('email'),phone:fd.get('phone'),instrument:fd.get('instrument'),yearsPlaying:fd.get('yearsPlaying'),lastPiece:fd.get('lastPiece'),lastBook:fd.get('lastBook'),pieceChoice:fd.get('pieceChoice')};
   try{
     var r=await fetch('/api/send-form',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
     if(!r.ok) throw 0;
