@@ -28,9 +28,20 @@
     <div class="container">
       <p class="section-subtitle reveal" style="max-width:680px;margin-bottom:3rem">From intimate student recitals to major cultural festivals — Zangouleh students perform. Every student is a performer. Every term ends on a stage.</p>
 
-      <div class="reveal" style="margin-bottom:2rem;border:2px solid var(--burgundy);border-radius:4px;padding:1.5rem;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;background:var(--yellow)">
-        <img src="images/events/3rd-ensemble-workshop.png" alt="Third Music Ensemble Workshop" style="max-width:340px;width:100%;display:block;border-radius:4px;flex-shrink:0">
-        <p style="font-size:0.9rem;color:var(--ink);line-height:1.8;margin:0;flex:1;min-width:220px">برای شرکت در این کارگاه، اسم و فامیل و نوع ساز را به این شماره از طریق واتساپ بفرستین:<br><strong style="color:var(--burgundy)">647 827 6462</strong></p>
+      <div class="reveal" style="margin-bottom:2rem;border:2px solid var(--burgundy);border-radius:4px;padding:1.5rem;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start;background:var(--yellow)">
+        <div style="max-width:340px;width:100%;flex-shrink:0">
+          <img src="images/events/3rd-ensemble-workshop.png" alt="Third Music Ensemble Workshop" style="width:100%;display:block;border-radius:4px">
+          <p style="font-size:0.85rem;color:var(--ink);line-height:1.8;margin-top:1rem">برای شرکت در این کارگاه، اسم و فامیل و نوع ساز را به این شماره از طریق واتساپ بفرستین:<br><strong style="color:var(--burgundy)">647 827 6462</strong></p>
+        </div>
+        <div style="flex:1;min-width:240px">
+          <form onsubmit="handleWorkshop(event)" id="workshop-form">
+            <div class="form-group"><label class="form-label">Full Name</label><input type="text" name="fullName" class="form-input" required></div>
+            <div class="form-group"><label class="form-label">Instrument</label><input type="text" name="instrument" class="form-input" placeholder="e.g. Santour, Piano, Violin…" required></div>
+            <div class="form-group"><label class="form-label">Last Piece / Book Performed</label><input type="text" name="lastPiece" class="form-input"></div>
+            <button type="submit" class="btn-primary" style="width:100%">Submit</button>
+          </form>
+          <div id="workshop-success" class="form-success" style="display:none">✓ Thank you! We received your info and will contact you.</div>
+        </div>
       </div>
 
       <div class="events-list reveal">
@@ -72,5 +83,24 @@
 </footer>
 <a href="https://wa.me/16478276462" class="wa-float" target="_blank">💬</a>
 <script>function toggleNav(){document.getElementById('navLinks').classList.toggle('open');}
-document.querySelectorAll('.reveal').forEach(el=>{new IntersectionObserver((e)=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')});},{threshold:0.08}).observe(el)});</script>
+document.querySelectorAll('.reveal').forEach(el=>{new IntersectionObserver((e)=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')});},{threshold:0.08}).observe(el)});
+
+async function handleWorkshop(e){
+  e.preventDefault();
+  var btn=e.target.querySelector('button[type="submit"]');
+  var orig=btn.textContent;
+  btn.disabled=true; btn.textContent='Sending…';
+  var fd=new FormData(e.target);
+  var data={formType:'workshop',fullName:fd.get('fullName'),instrument:fd.get('instrument'),lastPiece:fd.get('lastPiece')};
+  try{
+    var r=await fetch('/api/send-form',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    if(!r.ok) throw 0;
+    document.getElementById('workshop-success').style.display='block';
+    e.target.reset(); e.target.style.display='none';
+  }catch(_){
+    btn.disabled=false; btn.textContent=orig;
+    alert('Sorry — there was an error. Please WhatsApp or call us directly at +1 647 827 6462.');
+  }
+}
+</script>
 </body></html>

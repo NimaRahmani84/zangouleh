@@ -48,6 +48,13 @@ module.exports = async (req, res) => {
       ['Payment Method', d.paymentMethod || '—'],
       ['Notes', d.notes || '—']
     ];
+  } else if (type === 'workshop') {
+    subject = `[Website] Third Music Ensemble Workshop — ${d.fullName}`;
+    rows = [
+      ['Full Name', d.fullName],
+      ['Instrument', d.instrument],
+      ['Last Piece / Book Performed', d.lastPiece || '—']
+    ];
   } else {
     return res.status(400).json({ error: 'Unknown form type' });
   }
