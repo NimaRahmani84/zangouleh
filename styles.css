@@ -274,6 +274,8 @@ nav {
   display: grid;
   grid-template-columns: repeat(7, minmax(120px, 1fr));
   max-width: 1180px;
+  width: 100%;
+  box-sizing: border-box;
   margin: 0 auto;
   gap: 1rem;
   padding: 1.5rem 2rem 2rem;
@@ -569,7 +571,7 @@ footer { background:var(--burgundy); padding:3rem 2rem; text-align:center; flex-
   .two-col { grid-template-columns:1fr; gap:2.5rem; }
   .event-item { grid-template-columns:64px 1fr; }
   .event-type { display:none; }
-  .home-grid { grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); max-width:none; }
+  .home-grid { grid-template-columns:repeat(2, 1fr); max-width:none; }
   .workshop-form-grid { grid-template-columns:1fr !important; }
 }
 @media (max-width:600px) {
