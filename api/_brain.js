@@ -89,10 +89,15 @@ async function callOpenRouter(messages) {
   return res.json();
 }
 
+const STOPWORDS = new Set(['در','از','به','که','را','با','این','آن','تا','هم','یا','بر','و','یک','می','است','برای','مورد','چه','چی','ها','های','کن','کنم','رو','بود','شد','هستم','هستند','بگو','لطفا','لطفاً']);
+
 async function searchKnowledge(query) {
   try {
     const sb = getSupabase();
-    const terms = query.trim().split(/\s+/).slice(0, 6).join(' | ');
+    const words = query.trim().replace(/[؟?.,!،]/g, '').split(/\s+/)
+      .filter(w => w && !STOPWORDS.has(w));
+    if (!words.length) return [];
+    const terms = words.slice(0, 6).join(' | ');
     const { data } = await sb
       .from('knowledge_base')
       .select('title, content')
