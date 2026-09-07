@@ -53,6 +53,13 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
 .btn-dash-primary:hover{opacity:.88}
 .btn-mark-paid{background:#155724;color:#fff;border:none;border-radius:3px;padding:.2rem .5rem;font-size:.72rem;cursor:pointer}
 .btn-mark-paid:hover{opacity:.85}
+.att-cell{width:26px;height:26px;border:1px solid rgba(130,35,49,.2);border-radius:3px;background:#fff;cursor:pointer;font-weight:700;font-size:.75rem;padding:0}
+.att-cell:hover{border-color:var(--burgundy)}
+.att-cell.present{background:#d4edda;color:#155724}
+.att-cell.excused{background:#f0f0f0;color:#888}
+.att-cell.unexcused{background:#f8d7da;color:#721c24}
+.att-grid-name{white-space:nowrap;font-weight:600}
+.att-grid-left{font-weight:700;color:var(--burgundy);text-align:center}
 </style>
 </head>
 <body>
@@ -258,6 +265,25 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
             <tbody id="teacher-students-body"><tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
           </table>
         </div>
+
+        <div class="dash-section-title">Monthly Attendance Grid</div>
+        <p style="font-size:.78rem;color:var(--ink-soft);margin-top:-.5rem;margin-bottom:.75rem">Click a day cell to cycle: blank → Present → Excused → Unexcused → blank. Saves instantly.</p>
+        <div class="dash-form">
+          <div class="dash-form-row">
+            <div><label>Month</label><input type="month" id="grid-month"></div>
+          </div>
+          <div class="dash-form-actions">
+            <button class="btn-dash btn-dash-primary" onclick="loadAttendanceGrid()">Load Grid</button>
+            <span id="grid-msg" style="font-size:.8rem;color:var(--burgundy)"></span>
+          </div>
+        </div>
+        <div class="dash-table-wrap">
+          <table class="dash-table" id="attendance-grid-table" style="font-size:.76rem">
+            <thead><tr><th>Student</th></tr></thead>
+            <tbody id="attendance-grid-body"><tr><td style="text-align:center;color:var(--ink-soft);padding:2rem">Pick a month and click Load Grid.</td></tr></tbody>
+          </table>
+        </div>
+        <p id="grid-payroll-summary" style="font-size:.85rem;color:var(--ink-mid);margin-top:.75rem"></p>
       </div>
     </div>
 
@@ -336,6 +362,28 @@ function computeSessionsLeft(payments, attendance){
   const freePasses=pkg.package==='12-session'?2:0;
   const chargeableUnexcused=Math.max(0,unexcusedCount-freePasses);
   return pkg.total_sessions-(presentCount+chargeableUnexcused);
+}
+
+// Shared: billable sessions for ONE student in a calendar month, counting
+// unexcused-absence free passes cumulatively from the package's start_date
+// (not reset each month) — used by both admin payroll and the teacher grid.
+function computeBillableForMonth(pkg, attendance, monthStart, nextMonth){
+  const termStart=pkg.start_date||pkg.created_at;
+  const freePasses=pkg.package==='12-session'?2:0;
+  const allTermAtt=(attendance||[]).filter(a=>a.date>=termStart);
+  const beforeMonth=allTermAtt.filter(a=>a.date<monthStart);
+  const throughMonth=allTermAtt.filter(a=>a.date<nextMonth);
+  const chargeableBefore=Math.max(0,beforeMonth.filter(a=>a.status==='unexcused').length-freePasses);
+  const chargeableThrough=Math.max(0,throughMonth.filter(a=>a.status==='unexcused').length-freePasses);
+  const chargeableUnexcusedThisMonth=chargeableThrough-chargeableBefore;
+  const presentThisMonth=allTermAtt.filter(a=>a.date>=monthStart&&a.date<nextMonth&&a.status==='present').length;
+  return presentThisMonth+chargeableUnexcusedThisMonth;
+}
+
+function currentPackageFor(payments){
+  const pkgs=(payments||[]).filter(p=>p.total_sessions);
+  if(!pkgs.length)return null;
+  return pkgs.sort((a,b)=>new Date(b.start_date||b.created_at)-new Date(a.start_date||a.created_at))[0];
 }
 
 async function handleLogin(e){
@@ -540,22 +588,12 @@ async function loadPayroll(){
     let billable=0, revenue=0, payout=0, schoolCut=0;
     const splits=new Set();
     myStudents.forEach(s=>{
-      const studentPayments=(payments||[]).filter(p=>p.student_email===s.email&&p.total_sessions);
-      if(!studentPayments.length)return;
-      const pkg=studentPayments.sort((a,b)=>new Date(b.start_date||b.created_at)-new Date(a.start_date||a.created_at))[0];
+      const studentPayments=(payments||[]).filter(p=>p.student_email===s.email);
+      const pkg=currentPackageFor(studentPayments);
+      if(!pkg)return;
       const rate=pkg.amount/pkg.total_sessions;
-      const termStart=pkg.start_date||pkg.created_at;
-      const freePasses=pkg.package==='12-session'?2:0;
-
-      const allTermAtt=(attendance||[]).filter(a=>a.student_id===s.id&&a.date>=termStart);
-      const beforeMonth=allTermAtt.filter(a=>a.date<monthStart);
-      const throughMonth=allTermAtt.filter(a=>a.date<nextMonth);
-      const chargeableBefore=Math.max(0,beforeMonth.filter(a=>a.status==='unexcused').length-freePasses);
-      const chargeableThrough=Math.max(0,throughMonth.filter(a=>a.status==='unexcused').length-freePasses);
-      const chargeableUnexcusedThisMonth=chargeableThrough-chargeableBefore;
-      const presentThisMonth=allTermAtt.filter(a=>a.date>=monthStart&&a.date<nextMonth&&a.status==='present').length;
-
-      const studentBillable=presentThisMonth+chargeableUnexcusedThisMonth;
+      const studentAtt=(attendance||[]).filter(a=>a.student_id===s.id);
+      const studentBillable=computeBillableForMonth(pkg, studentAtt, monthStart, nextMonth);
       const studentRevenue=studentBillable*rate;
       const teacherPct=s.enrolled_via==='instructor'?0.70:0.60;
       billable+=studentBillable;
@@ -585,6 +623,7 @@ async function loadTeacherData(user){
   document.getElementById('t-stat-students').textContent=students?.length??0;
   document.getElementById('t-stat-sessions').textContent=sessions?.length??0;
   document.getElementById('att-date').value=now.toISOString().split('T')[0];
+  document.getElementById('grid-month').value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 
   const tbody=document.getElementById('teacher-students-body');
   if(!students?.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">No students assigned yet.</td></tr>';return;}
@@ -646,6 +685,92 @@ async function recordAttendance(){
   const {error}=await sb.from('attendance').insert({student_id:profile.id,teacher_id:session.user.id,date,status,notes:notes||null});
   if(error){msg.textContent='Error: '+error.message;}
   else{msg.textContent='✓ Saved!';loadTeacherData(session.user);setTimeout(()=>{msg.textContent='';},3000);}
+}
+
+// ── ATTENDANCE GRID (spreadsheet-style monthly view) ──
+const ATT_CYCLE=[null,'present','excused','unexcused'];
+const ATT_SYMBOL={present:'1',excused:'0',unexcused:'1'};
+
+async function loadAttendanceGrid(){
+  const monthInput=document.getElementById('grid-month').value;
+  const msg=document.getElementById('grid-msg');
+  const table=document.getElementById('attendance-grid-table');
+  const body=document.getElementById('attendance-grid-body');
+  if(!monthInput){msg.textContent='Pick a month first.';return;}
+  const {data:{session}}=await sb.auth.getSession();
+  const [y,m]=monthInput.split('-').map(Number);
+  const daysInMonth=new Date(y,m,0).getDate();
+  const monthStart=`${y}-${String(m).padStart(2,'0')}-01`;
+  const nextMonth=m===12?`${y+1}-01-01`:`${y}-${String(m+1).padStart(2,'0')}-01`;
+
+  const {data:students}=await sb.from('profiles').select('*').eq('teacher_id',session.user.id);
+  if(!students?.length){body.innerHTML='<tr><td style="text-align:center;color:var(--ink-soft);padding:2rem">No students assigned yet.</td></tr>';return;}
+  const {data:payments}=await sb.from('payments').select('*').in('student_email',students.map(s=>s.email));
+  const {data:attendance}=await sb.from('attendance').select('*').in('student_id',students.map(s=>s.id));
+
+  // header
+  const thead=table.querySelector('thead tr');
+  let headHtml='<th>Student</th>';
+  for(let d=1;d<=daysInMonth;d++)headHtml+=`<th style="text-align:center;padding:.3rem">${d}</th>`;
+  headHtml+='<th>Left</th>';
+  thead.innerHTML=headHtml;
+
+  let totalBillable=0, totalRevenue=0, totalPayout=0;
+  const splits=new Set();
+
+  body.innerHTML=students.map(s=>{
+    const studentPayments=(payments||[]).filter(p=>p.student_email===s.email);
+    const pkg=currentPackageFor(studentPayments);
+    const studentAtt=(attendance||[]).filter(a=>a.student_id===s.id);
+    const left=computeSessionsLeft(studentPayments,studentAtt);
+
+    if(pkg){
+      const rate=pkg.amount/pkg.total_sessions;
+      const billable=computeBillableForMonth(pkg,studentAtt,monthStart,nextMonth);
+      const teacherPct=s.enrolled_via==='instructor'?0.70:0.60;
+      totalBillable+=billable;
+      totalRevenue+=billable*rate;
+      totalPayout+=billable*rate*teacherPct;
+      splits.add(teacherPct===0.70?'70/30':'60/40');
+    }
+
+    let cells='';
+    for(let d=1;d<=daysInMonth;d++){
+      const dateStr=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const rec=studentAtt.find(a=>a.date===dateStr);
+      const status=rec?rec.status:null;
+      const symbol=status?ATT_SYMBOL[status]:'';
+      cells+=`<td style="text-align:center;padding:.2rem"><button type="button" class="att-cell ${status||''}" onclick="toggleAttendanceCell(this,'${s.id}','${dateStr}')">${symbol}</button></td>`;
+    }
+    return `<tr><td class="att-grid-name">${s.full_name||s.email}</td>${cells}<td class="att-grid-left">${left===null?'–':left}</td></tr>`;
+  }).join('');
+
+  const summary=document.getElementById('grid-payroll-summary');
+  summary.textContent=totalBillable>0
+    ? `Pay to Instructor for ${monthInput}: $${totalPayout.toFixed(2)} (${totalBillable} billable sessions, split ${[...splits].join(', ')})`
+    : '';
+  msg.textContent='';
+}
+
+async function toggleAttendanceCell(btn,studentId,dateStr){
+  const {data:{session}}=await sb.auth.getSession();
+  const current=ATT_CYCLE.find(s=>s===(btn.classList.contains('present')?'present':btn.classList.contains('excused')?'excused':btn.classList.contains('unexcused')?'unexcused':null));
+  const idx=ATT_CYCLE.indexOf(current);
+  const next=ATT_CYCLE[(idx+1)%ATT_CYCLE.length];
+
+  btn.disabled=true;
+  if(next===null){
+    await sb.from('attendance').delete().eq('student_id',studentId).eq('date',dateStr).eq('teacher_id',session.user.id);
+  } else {
+    const {data:existing}=await sb.from('attendance').select('id').eq('student_id',studentId).eq('date',dateStr).maybeSingle();
+    if(existing){
+      await sb.from('attendance').update({status:next}).eq('id',existing.id);
+    } else {
+      await sb.from('attendance').insert({student_id:studentId,teacher_id:session.user.id,date:dateStr,status:next});
+    }
+  }
+  btn.disabled=false;
+  loadAttendanceGrid();
 }
 
 // ── STUDENT ──
