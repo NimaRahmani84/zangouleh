@@ -80,4 +80,5 @@
 <script>function toggleNav(){document.getElementById('navLinks').classList.toggle('open');}
 document.querySelectorAll('.reveal').forEach(el=>{new IntersectionObserver((e)=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')});},{threshold:0.08}).observe(el)});
 document.querySelectorAll('.eq-bar').forEach((b,i)=>{function a(){b.style.height=(15+Math.random()*85)+'%';setTimeout(a,200+Math.random()*400);}setTimeout(a,i*80);});</script>
+<script src="widget.js"></script>
 </body></html>
