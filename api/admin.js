@@ -102,6 +102,20 @@ module.exports = async (req, res) => {
         return res.json({ data });
       }
 
+      case 'list_messages': {
+        let q = sb.from('form_submissions').select('*').order('created_at', { ascending: false });
+        if (payload.formType) q = q.eq('form_type', payload.formType);
+        const { data, error } = await q;
+        if (error) throw error;
+        return res.json({ data });
+      }
+
+      case 'delete_message': {
+        const { error } = await sb.from('form_submissions').delete().eq('id', payload.id);
+        if (error) throw error;
+        return res.json({ ok: true });
+      }
+
       default:
         return res.status(400).json({ error: 'عملیات ناشناخته' });
     }

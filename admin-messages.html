@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Website Messages | Zangouleh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+*{box-sizing:border-box}
+:root{--burgundy:#822331;--yellow:#f0d060;--yellow-dark:#e8c840;--ink:#1a1a1a;--ink-mid:#444;--ink-soft:#777;--bg:#fdf8ec}
+body{margin:0;font-family:'Raleway',sans-serif;background:var(--bg);color:var(--ink)}
+nav{background:var(--burgundy);padding:0.9rem 1.5rem;display:flex;align-items:center;gap:1rem}
+.nav-logo{color:var(--yellow);font-family:'Raleway',sans-serif;font-weight:700;font-size:1.05rem;text-decoration:none}
+.nav-back{color:var(--yellow);text-decoration:none;font-size:0.78rem;opacity:0.85;margin-right:auto}
+.nav-back:hover{opacity:1}
+
+#loading{text-align:center;padding:4rem 2rem}
+.spin{display:inline-block;width:36px;height:36px;border:3px solid rgba(130,35,49,.2);border-top-color:var(--burgundy);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#login-box{max-width:400px;margin:3rem auto;padding:0 1rem}
+#forgot-box{max-width:400px;margin:3rem auto;padding:0 1rem}
+.login-error{background:#fff0f0;border:1px solid #f5c6cb;color:#721c24;padding:.6rem 1rem;border-radius:4px;font-size:.82rem;margin-bottom:1rem;display:none}
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:.82rem;font-weight:600;margin-bottom:.3rem;color:var(--ink-mid)}
+.form-input{width:100%;padding:.6rem .8rem;border:1.5px solid rgba(130,35,49,.25);border-radius:5px;font-size:.88rem;font-family:inherit;background:#fff}
+.form-input:focus{outline:none;border-color:var(--burgundy)}
+.btn-primary{background:var(--burgundy);color:var(--yellow);border:none;padding:.7rem 1.2rem;border-radius:5px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-primary:hover{opacity:.9}
+
+#denied{text-align:center;padding:4rem 2rem;color:var(--ink-soft)}
+
+.dash-header{background:var(--burgundy);color:var(--yellow);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+.dash-header h2{font-family:'Raleway',sans-serif;font-size:1.25rem;margin:0}
+.dash-signout{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:var(--yellow);padding:.4rem 1rem;border-radius:4px;cursor:pointer;font-size:.8rem;font-family:inherit}
+.dash-signout:hover{background:rgba(255,255,255,.25)}
+.dash-body{padding:1.5rem;max-width:1200px;margin:0 auto}
+
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
+.dash-stat{background:var(--yellow-dark);border:2px solid rgba(130,35,49,.15);border-radius:6px;padding:1.1rem 1.4rem;cursor:pointer}
+.dash-stat.active{border-color:var(--burgundy)}
+.dash-stat-num{font-family:'Raleway',sans-serif;font-size:1.8rem;font-weight:700;color:var(--burgundy)}
+.dash-stat-label{font-size:.76rem;color:var(--ink-soft);margin-top:.2rem}
+
+.dash-table-wrap{overflow-x:auto;margin-bottom:1.5rem;background:#fff;border-radius:6px;border:1.5px solid rgba(130,35,49,.12)}
+table.dash-table{width:100%;border-collapse:collapse;font-size:.82rem}
+table.dash-table th{background:var(--burgundy);color:var(--yellow);padding:.6rem .8rem;text-align:left;font-weight:600;white-space:nowrap}
+table.dash-table td{padding:.6rem .8rem;border-bottom:1px solid rgba(130,35,49,.08);vertical-align:top}
+table.dash-table tr:hover td{background:rgba(246,235,138,.25)}
+.cell-trunc{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-sm{padding:.28rem .65rem;border:none;border-radius:4px;font-size:.74rem;cursor:pointer;font-family:inherit}
+.btn-del{background:#f8d7da;color:#721c24}
+.btn-view{background:var(--yellow);color:var(--burgundy)}
+.type-badge{display:inline-block;padding:.15rem .55rem;border-radius:20px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.type-contact{background:#d1ecf1;color:#0c5460}
+.type-consultation{background:#fff3cd;color:#856404}
+.type-enrollment{background:#d4edda;color:#155724}
+.type-workshop{background:#e2d9f3;color:#4a2f7a}
+
+#detail-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;align-items:center;justify-content:center;padding:1rem}
+#detail-modal.open{display:flex}
+.detail-box{background:#fff;border-radius:8px;max-width:480px;width:100%;max-height:80vh;display:flex;flex-direction:column;overflow:hidden}
+.detail-head{background:var(--burgundy);color:var(--yellow);padding:.8rem 1.1rem;display:flex;justify-content:space-between;align-items:center}
+.detail-close{background:none;border:none;color:var(--yellow);font-size:1.2rem;cursor:pointer}
+.detail-body{padding:1rem;overflow-y:auto}
+.detail-row{display:flex;gap:.5rem;padding:.4rem 0;border-bottom:1px solid #f0f0f0;font-size:.85rem}
+.detail-key{font-weight:600;color:var(--ink-mid);min-width:140px}
+.detail-val{color:var(--ink);word-break:break-word}
+
+.empty-note{text-align:center;color:var(--ink-soft);padding:2rem;font-size:.85rem}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">Zangouleh <span style="opacity:.7;font-weight:400;font-size:.7rem">Website Messages</span></a>
+  <a href="portal.html" class="nav-back">← Portal</a>
+</nav>
+
+<div id="loading"><div class="spin"></div><p style="color:var(--ink-soft);font-size:.85rem;margin-top:1rem">Loading…</p></div>
+
+<div id="login-box" style="display:none">
+  <h2 style="font-family:'Raleway',sans-serif;color:var(--burgundy);text-align:center;margin-bottom:.3rem">Admin Sign In</h2>
+  <p style="text-align:center;font-size:.82rem;color:var(--ink-soft);margin-bottom:1.5rem">Website Messages admin login</p>
+  <div class="login-error" id="login-error"></div>
+  <form onsubmit="handleLogin(event)">
+    <div class="form-group"><label class="form-label">Email</label><input type="email" id="login-email" class="form-input" required></div>
+    <div class="form-group"><label class="form-label">Password</label><input type="password" id="login-password" class="form-input" required></div>
+    <button type="submit" class="btn-primary" style="width:100%" id="login-btn">Sign In</button>
+  </form>
+  <p style="text-align:center;font-size:.78rem;margin-top:1rem"><a href="#" onclick="showForgot(event)" style="color:var(--ink-soft)">Forgot password?</a></p>
+</div>
+
+<div id="forgot-box" style="display:none">
+  <h2 style="font-family:'Raleway',sans-serif;color:var(--burgundy);text-align:center;margin-bottom:.3rem">Reset Password</h2>
+  <p style="text-align:center;font-size:.82rem;color:var(--ink-soft);margin-bottom:1.5rem">Enter your email and we'll send you a reset link.</p>
+  <div class="login-error" id="forgot-error"></div>
+  <div class="login-error" id="forgot-success" style="background:#d4edda;border-color:#c3e6cb;color:#155724;"></div>
+  <form onsubmit="handleForgot(event)">
+    <div class="form-group"><label class="form-label">Email</label><input type="email" id="forgot-email" class="form-input" required></div>
+    <button type="submit" class="btn-primary" style="width:100%" id="forgot-btn">Send Reset Link</button>
+  </form>
+  <p style="text-align:center;font-size:.78rem;margin-top:1rem"><a href="#" onclick="showLoginBox(event)" style="color:var(--burgundy)">Back to sign in</a></p>
+</div>
+
+<div id="denied" style="display:none">
+  <p>⛔ You do not have admin access.</p>
+  <p><a href="portal.html" style="color:var(--burgundy)">Back to Portal</a></p>
+</div>
+
+<div id="dashboard" style="display:none">
+  <div class="dash-header">
+    <h2>Website Messages</h2>
+    <button class="dash-signout" onclick="signOut()">Sign Out</button>
+  </div>
+  <div class="dash-body">
+    <div class="dash-grid" id="filter-stats">
+      <div class="dash-stat active" data-type="" onclick="setFilter('')"><div class="dash-stat-num" id="stat-all">–</div><div class="dash-stat-label">All Messages</div></div>
+      <div class="dash-stat" data-type="contact" onclick="setFilter('contact')"><div class="dash-stat-num" id="stat-contact">–</div><div class="dash-stat-label">Contact</div></div>
+      <div class="dash-stat" data-type="consultation" onclick="setFilter('consultation')"><div class="dash-stat-num" id="stat-consultation">–</div><div class="dash-stat-label">Consultation</div></div>
+      <div class="dash-stat" data-type="enrollment" onclick="setFilter('enrollment')"><div class="dash-stat-num" id="stat-enrollment">–</div><div class="dash-stat-label">Enrollment</div></div>
+      <div class="dash-stat" data-type="workshop" onclick="setFilter('workshop')"><div class="dash-stat-num" id="stat-workshop">–</div><div class="dash-stat-label">Events / Workshop</div></div>
+    </div>
+
+    <div class="dash-table-wrap">
+      <table class="dash-table">
+        <thead><tr><th>Date</th><th>Type</th><th>Name</th><th>Email</th><th>Phone</th><th></th><th></th></tr></thead>
+        <tbody id="messages-body"><tr><td colspan="7" class="empty-note">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="detail-modal">
+  <div class="detail-box">
+    <div class="detail-head"><span>Message Details</span><button class="detail-close" onclick="closeDetail()">✕</button></div>
+    <div class="detail-body" id="detail-body-content"></div>
+  </div>
+</div>
+
+<script>
+const API = '/api/admin';
+let accessToken = null;
+let currentFilter = '';
+let messagesCache = [];
+
+async function callApi(action, payload = {}) {
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
+    body: JSON.stringify({ action, payload })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Error');
+  return data;
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-error');
+  btn.textContent = 'Signing in…'; btn.disabled = true; err.style.display = 'none';
+  const { data, error } = await sb.auth.signInWithPassword({
+    email: document.getElementById('login-email').value.trim(),
+    password: document.getElementById('login-password').value
+  });
+  if (error) { err.textContent = error.message; err.style.display = 'block'; btn.textContent = 'Sign In'; btn.disabled = false; return; }
+  await init(data.session);
+}
+
+function showForgot(e) {
+  e.preventDefault();
+  document.getElementById('login-box').style.display = 'none';
+  document.getElementById('forgot-box').style.display = 'block';
+}
+function showLoginBox(e) {
+  e.preventDefault();
+  document.getElementById('forgot-box').style.display = 'none';
+  document.getElementById('login-box').style.display = 'block';
+}
+
+async function handleForgot(e) {
+  e.preventDefault();
+  const btn = document.getElementById('forgot-btn');
+  const err = document.getElementById('forgot-error');
+  const ok = document.getElementById('forgot-success');
+  err.style.display = 'none'; ok.style.display = 'none';
+  const email = document.getElementById('forgot-email').value.trim();
+  btn.textContent = 'Sending…'; btn.disabled = true;
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/reset-password.html'
+  });
+  btn.textContent = 'Send Reset Link'; btn.disabled = false;
+  if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
+  ok.textContent = 'If an account exists for this email, a reset link has been sent.';
+  ok.style.display = 'block';
+  document.getElementById('forgot-email').value = '';
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  location.reload();
+}
+
+async function init(session) {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('login-box').style.display = 'none';
+  document.getElementById('forgot-box').style.display = 'none';
+  if (!session) { document.getElementById('login-box').style.display = 'block'; return; }
+
+  const { data: profile } = await sb.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
+  if (profile?.role !== 'admin') { document.getElementById('denied').style.display = 'block'; return; }
+
+  accessToken = session.access_token;
+  document.getElementById('dashboard').style.display = 'block';
+  loadMessages();
+}
+
+function setFilter(type) {
+  currentFilter = type;
+  document.querySelectorAll('.dash-stat').forEach(el => el.classList.toggle('active', el.dataset.type === type));
+  renderMessages();
+}
+
+async function loadMessages() {
+  const body = document.getElementById('messages-body');
+  try {
+    const { data } = await callApi('list_messages');
+    messagesCache = data || [];
+    document.getElementById('stat-all').textContent = messagesCache.length;
+    ['contact','consultation','enrollment','workshop'].forEach(t => {
+      document.getElementById('stat-' + t).textContent = messagesCache.filter(m => m.form_type === t).length;
+    });
+    renderMessages();
+  } catch (e) { body.innerHTML = `<tr><td colspan="7" class="empty-note">Error: ${e.message}</td></tr>`; }
+}
+
+function extractField(d, keys) {
+  for (const k of keys) if (d[k]) return d[k];
+  return '–';
+}
+
+function renderMessages() {
+  const body = document.getElementById('messages-body');
+  const list = currentFilter ? messagesCache.filter(m => m.form_type === currentFilter) : messagesCache;
+  body.innerHTML = list.length ? list.map(m => {
+    const d = m.data || {};
+    const name = extractField(d, ['fullName','name']) !== '–' ? extractField(d, ['fullName','name']) : `${d.firstName || ''} ${d.lastName || ''}`.trim() || '–';
+    const email = d.email || '–';
+    const phone = d.phone || '–';
+    return `<tr>
+      <td>${m.created_at ? new Date(m.created_at).toLocaleString() : '–'}</td>
+      <td><span class="type-badge type-${m.form_type}">${m.form_type}</span></td>
+      <td>${esc(name)}</td>
+      <td class="cell-trunc">${esc(email)}</td>
+      <td>${esc(phone)}</td>
+      <td><button class="btn-sm btn-view" onclick="viewDetail(${m.id})">View</button></td>
+      <td><button class="btn-sm btn-del" onclick="deleteMessage(${m.id})">Delete</button></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="7" class="empty-note">No messages yet.</td></tr>';
+}
+
+function viewDetail(id) {
+  const m = messagesCache.find(x => x.id === id);
+  if (!m) return;
+  const d = m.data || {};
+  const rows = Object.entries(d).map(([k,v]) => `<div class="detail-row"><div class="detail-key">${esc(k)}</div><div class="detail-val">${esc(v)}</div></div>`).join('');
+  document.getElementById('detail-body-content').innerHTML =
+    `<div class="detail-row"><div class="detail-key">Type</div><div class="detail-val">${esc(m.form_type)}</div></div>
+     <div class="detail-row"><div class="detail-key">Received</div><div class="detail-val">${new Date(m.created_at).toLocaleString()}</div></div>
+     ${rows}`;
+  document.getElementById('detail-modal').classList.add('open');
+}
+function closeDetail() { document.getElementById('detail-modal').classList.remove('open'); }
+
+async function deleteMessage(id) {
+  if (!confirm('Delete this message?')) return;
+  await callApi('delete_message', { id });
+  loadMessages();
+}
+
+function esc(s) { return String(s ?? '–').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  await init(session);
+});
+</script>
+</body>
+</html>
