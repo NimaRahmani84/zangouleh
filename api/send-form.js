@@ -54,6 +54,7 @@ module.exports = async (req, res) => {
       ['Full Name', d.fullName],
       ['Email', d.email || '—'],
       ['Phone', d.phone],
+      ['WhatsApp', d.whatsapp || 'Same as phone'],
       ['Age', d.age || '—'],
       ['Instrument', d.instrument],
       ['Years Playing / Practicing', d.yearsPlaying || '—'],
