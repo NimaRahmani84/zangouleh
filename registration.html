@@ -92,6 +92,37 @@
 .payment-opt-icon { font-size: 1.3rem; margin-bottom: 0.3rem; }
 .payment-opt-name { font-size: 0.72rem; font-weight: 700; color: var(--ink); letter-spacing: 0.05em; }
 .payment-opt-sub { font-size: 0.65rem; color: var(--ink-soft); margin-top: 0.1rem; }
+
+/* ── Requirements block (shown first) ── */
+.req-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1.5rem; margin-bottom:1rem; }
+.req-card { border:2px solid rgba(130,35,49,0.25); border-radius:6px; padding:1.5rem; background:var(--yellow-dark); }
+.req-card-title { font-family:var(--font-display); font-size:1rem; font-weight:700; color:var(--burgundy); font-style:italic; margin-bottom:0.6rem; }
+.req-card-text { font-size:0.82rem; color:var(--ink-mid); line-height:1.75; }
+
+/* ── Class type + pricing ── */
+.price-table { width:100%; border-collapse:collapse; margin-top:0.75rem; font-size:0.85rem; }
+.price-table th { background:var(--burgundy); color:var(--yellow); padding:0.5rem 0.75rem; text-align:left; font-weight:600; font-size:0.75rem; letter-spacing:0.03em; }
+.price-table td { padding:0; border-bottom:1px solid rgba(130,35,49,0.15); }
+.price-row-label { display:flex; align-items:center; gap:0.6rem; padding:0.65rem 0.75rem; cursor:pointer; }
+.price-row-label:hover { background:var(--yellow); }
+.price-row-label input[type="radio"] { accent-color:var(--burgundy); }
+.price-note { font-size:0.75rem; color:var(--ink-soft); margin-top:0.5rem; }
+
+/* ── Acknowledgments ── */
+.ack-box { background:var(--yellow-dark); border:2px solid rgba(130,35,49,0.25); border-radius:6px; padding:1.5rem; margin-top:1.5rem; }
+.ack-checkbox { display:flex; align-items:flex-start; gap:0.6rem; font-size:0.82rem; color:var(--ink-mid); line-height:1.6; margin-bottom:1rem; cursor:pointer; }
+.ack-checkbox input[type="checkbox"] { margin-top:0.2rem; flex-shrink:0; accent-color:var(--burgundy); width:16px; height:16px; }
+.btn-view-policies { background:none; border:2px solid var(--burgundy); color:var(--burgundy); border-radius:4px; padding:0.5rem 1rem; font-size:0.78rem; font-weight:700; cursor:pointer; font-family:var(--font-body); letter-spacing:0.05em; margin-bottom:1rem; }
+.btn-view-policies:hover { background:var(--burgundy); color:var(--yellow); }
+
+/* ── Policies modal ── */
+.policies-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9999; align-items:center; justify-content:center; padding:1.5rem; }
+.policies-modal-overlay.open { display:flex; }
+.policies-modal-box { background:var(--bg); border-radius:8px; max-width:900px; width:100%; max-height:85vh; display:flex; flex-direction:column; overflow:hidden; }
+.policies-modal-head { background:var(--burgundy); color:var(--yellow); padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; }
+.policies-modal-head h3 { font-family:var(--font-display); font-style:italic; margin:0; font-size:1.1rem; }
+.policies-modal-close { background:none; border:none; color:var(--yellow); font-size:1.4rem; cursor:pointer; line-height:1; }
+.policies-modal-body { padding:1.5rem; overflow-y:auto; }
 </style>
 </head>
 <body>
@@ -194,15 +225,52 @@
           <button onclick="backToChoose()" style="background:none;border:2px solid var(--burgundy);border-radius:4px;padding:0.4rem 0.9rem;cursor:pointer;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);font-family:var(--font-body);font-weight:700">← Back</button>
           <h2 style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:var(--burgundy);font-style:italic;margin:0">Enroll &amp; Pay — ثبت‌نام</h2>
         </div>
+
+        <!-- (A) Requirements & Policies — shown FIRST, before any field -->
+        <div style="margin-bottom:2.5rem">
+          <p class="section-label">قوانین و الزامات · Requirements</p>
+          <h3 style="font-family:var(--font-display);font-size:1.25rem;font-weight:700;color:var(--ink);font-style:italic;margin-bottom:1.25rem">Please Read Before Enrolling</h3>
+          <div class="req-grid" id="policies-content">
+            <div class="req-card">
+              <div class="req-card-title">💳 Payments</div>
+              <div class="req-card-text">Tuition is accepted by cash or Interac e-Transfer to <strong>zangoulehmusicschool@gmail.com</strong>, and must be paid in full before the first session of each term. Pricing appears below once you select a class type.</div>
+            </div>
+            <div class="req-card">
+              <div class="req-card-title">📅 Absence &amp; Classes</div>
+              <div class="req-card-text">No session may be cancelled by the student, but it may be replaced with an online session at the same class time — otherwise it is forfeited. This does not apply to Children's Group classes: missed sessions there cannot be rescheduled unless parents conduct the session at home per the instructor's guidance. Students registered for a full 12-session term may place classes on hold for 4–6 sessions; held sessions carry over to the <em>next</em> term. Students should be ready 5 minutes before class starts.</div>
+            </div>
+            <div class="req-card">
+              <div class="req-card-title">🎥 Recording &amp; Publishing</div>
+              <div class="req-card-text">The school may record or photograph classes and activities for documentation or promotion on its social media. Students may indicate disapproval before signing; otherwise, signing implies consent to recording and publication.</div>
+            </div>
+            <div class="req-card">
+              <div class="req-card-title">🔒 Security &amp; Privacy</div>
+              <div class="req-card-text">The academy is equipped with 8 security cameras recording audio and video for the safety of students and instructors. The school safeguards this information but is not responsible for the release of any portion of it.</div>
+            </div>
+            <div class="req-card" id="req-allergy-card" style="display:none">
+              <div class="req-card-title">🌿 Allergies &amp; Health Notification (Children's Classes)</div>
+              <div class="req-card-text">Parents/guardians must inform the school of any food or environmental allergies and specific medical conditions that may affect their child's health and safety during class. Failure to provide this information exempts the school from responsibility in this regard.</div>
+            </div>
+            <div class="req-card">
+              <div class="req-card-title">💊 Medication &amp; Health Conditions</div>
+              <div class="req-card-text">Parents/guardians must provide complete information about any health conditions or need for specific medications during class. The school bears no responsibility for inaccurate information or non-adherence to medical requirements — full responsibility falls on the parents.</div>
+            </div>
+          </div>
+        </div>
+
         <div class="two-col">
           <div class="reg-form">
-            <form onsubmit="handleEnroll(event)">
+            <form id="enroll-form" onsubmit="handleEnroll(event)">
               <div class="form-row">
                 <div class="form-group"><label class="form-label">First Name * — نام</label><input name="firstName" type="text" class="form-input" placeholder="First name" required></div>
                 <div class="form-group"><label class="form-label">Last Name * — نام خانوادگی</label><input name="lastName" type="text" class="form-input" placeholder="Last name" required></div>
               </div>
               <div class="form-group"><label class="form-label">Phone / WhatsApp * — شماره تلفن</label><input name="phone" type="tel" class="form-input" placeholder="+1 (647) ..." required></div>
-              <div class="form-group"><label class="form-label">Email Address *</label><input name="email" type="email" class="form-input" placeholder="your@email.com" required></div>
+              <div class="form-group"><label class="form-label">Email Address * (Gmail preferred)</label><input name="email" type="email" class="form-input" placeholder="your@email.com" required></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Reference — چطور با ما آشنا شدید؟</label><input name="reference" type="text" class="form-input" placeholder="Friend, Instagram, Google…"></div>
+                <div class="form-group"><label class="form-label">Day &amp; Month of Birth (optional)</label><input name="birthDate" type="text" class="form-input" placeholder="DD/MM"></div>
+              </div>
               <div class="form-group">
                 <label class="form-label">Instrument / Program * — ساز یا برنامه</label>
                 <select name="instrument" class="form-select" required>
@@ -234,24 +302,74 @@
                   <optgroup label="Weekend"><option>Saturday morning</option><option>Saturday afternoon</option><option>Sunday morning</option><option>Sunday afternoon</option></optgroup>
                 </select>
               </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Lesson Type</label>
-                  <select name="lessonType" class="form-select"><option>Private (one-on-one)</option><option>Group class</option></select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Student Age</label>
-                  <select name="age" class="form-select"><option value="">Select</option><option>4–8 years</option><option>9–12 years</option><option>13–17 years</option><option>18–30 years</option><option>31–50 years</option><option>51+ years</option></select>
-                </div>
-              </div>
               <div class="form-group">
-                <label class="form-label">Package *</label>
-                <select name="package" class="form-select" id="pkg-select" required onchange="updatePayment()">
-                  <option value="">Select a package</option>
-                  <option value="4-Session Package (Introductory)">4-Session Package (Introductory)</option>
-                  <option value="12-Session Full Term">12-Session Full Term</option>
+                <label class="form-label">Student Age</label>
+                <select name="age" class="form-select"><option value="">Select</option><option>4–8 years</option><option>9–12 years</option><option>13–17 years</option><option>18–30 years</option><option>31–50 years</option><option>51+ years</option></select>
+              </div>
+
+              <!-- Class Type — choosing this reveals the matching price table -->
+              <div class="form-group">
+                <label class="form-label">Class Type * — نوع کلاس</label>
+                <select name="classType" id="class-type-select" class="form-select" required onchange="selectClassType(this.value)">
+                  <option value="">Select a class type</option>
+                  <option value="private">Private Class — کلاس خصوصی</option>
+                  <option value="adult">Adult's Group Class — کلاس گروهی بزرگسال</option>
+                  <option value="children">Children's Group Class — کلاس گروهی کودکان</option>
                 </select>
               </div>
+
+              <!-- Pricing tables (one shown at a time, based on class type) -->
+              <div class="form-group" id="price-private" style="display:none">
+                <label class="form-label">Choose Package — All Private Classes</label>
+                <table class="price-table">
+                  <thead><tr><th>Duration</th><th>Sessions</th><th>Price</th></tr></thead>
+                  <tbody>
+                    <tr><td><label class="price-row-label"><input type="radio" name="priceOption" onclick="selectPrice('30 Min',12,40,'Private — 30 Min — 12 Sessions')">30 Min</label></td><td><label class="price-row-label" style="cursor:default">12 Sessions</label></td><td><label class="price-row-label" style="cursor:default">$40.00</label></td></tr>
+                    <tr><td><label class="price-row-label"><input type="radio" name="priceOption" onclick="selectPrice('60 Min',12,70,'Private — 60 Min — 12 Sessions')">60 Min</label></td><td><label class="price-row-label" style="cursor:default">12 Sessions</label></td><td><label class="price-row-label" style="cursor:default">$70.00</label></td></tr>
+                    <tr><td><label class="price-row-label"><input type="radio" name="priceOption" onclick="selectPrice('30 Min',6,45,'Private — 30 Min — 6 Sessions')">30 Min</label></td><td><label class="price-row-label" style="cursor:default">6 Sessions</label></td><td><label class="price-row-label" style="cursor:default">$45.00</label></td></tr>
+                    <tr><td><label class="price-row-label"><input type="radio" name="priceOption" onclick="selectPrice('60 Min',6,80,'Private — 60 Min — 6 Sessions')">60 Min</label></td><td><label class="price-row-label" style="cursor:default">6 Sessions</label></td><td><label class="price-row-label" style="cursor:default">$80.00</label></td></tr>
+                  </tbody>
+                </table>
+                <p class="price-note">Prices are per session package, charged as a full-term registration.</p>
+              </div>
+
+              <div class="form-group" id="price-adult" style="display:none">
+                <label class="form-label">Choose Package — Adult's Group Music Classes</label>
+                <table class="price-table">
+                  <thead><tr><th>Duration</th><th>Sessions</th><th>Price</th></tr></thead>
+                  <tbody>
+                    <tr><td><label class="price-row-label"><input type="radio" name="priceOption" onclick="selectPrice('30 Min',12,20,'Adult Group — 30 Min — 12 Sessions')">30 Min</label></td><td><label class="price-row-label" style="cursor:default">12 Sessions</label></td><td><label class="price-row-label" style="cursor:default">$20.00</label></td></tr>
+                    <tr><td><label class="price-row-label"><input type="radio" name="priceOption" onclick="selectPrice('60 Min',12,30,'Adult Group — 60 Min — 12 Sessions')">60 Min</label></td><td><label class="price-row-label" style="cursor:default">12 Sessions</label></td><td><label class="price-row-label" style="cursor:default">$30.00</label></td></tr>
+                    <tr><td><label class="price-row-label"><input type="radio" name="priceOption" onclick="selectPrice('30 Min',6,25,'Adult Group — 30 Min — 6 Sessions')">30 Min</label></td><td><label class="price-row-label" style="cursor:default">6 Sessions</label></td><td><label class="price-row-label" style="cursor:default">$25.00</label></td></tr>
+                    <tr><td><label class="price-row-label"><input type="radio" name="priceOption" onclick="selectPrice('60 Min',6,35,'Adult Group — 60 Min — 6 Sessions')">60 Min</label></td><td><label class="price-row-label" style="cursor:default">6 Sessions</label></td><td><label class="price-row-label" style="cursor:default">$35.00</label></td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="form-group" id="price-children" style="display:none">
+                <label class="form-label">Choose Package — Children's Group Music Classes</label>
+                <table class="price-table">
+                  <thead><tr><th>Duration</th><th>Sessions</th><th>Price</th></tr></thead>
+                  <tbody>
+                    <tr><td><label class="price-row-label"><input type="radio" name="priceOption" onclick="selectPrice('45 Min',12,25,'Children Group — 45 Min — 12 Sessions')">45 Min</label></td><td><label class="price-row-label" style="cursor:default">12 Sessions</label></td><td><label class="price-row-label" style="cursor:default">$25.00</label></td></tr>
+                    <tr><td><label class="price-row-label"><input type="radio" name="priceOption" onclick="selectPrice('60 Min',12,30,'Children Group — 60 Min — 12 Sessions')">60 Min</label></td><td><label class="price-row-label" style="cursor:default">12 Sessions</label></td><td><label class="price-row-label" style="cursor:default">$30.00</label></td></tr>
+                    <tr><td><label class="price-row-label"><input type="radio" name="priceOption" onclick="selectPrice('60 Min',1,99,'Children Group — Trial 60 Min — 1 Session')">60 Min (Trial)</label></td><td><label class="price-row-label" style="cursor:default">1 Session</label></td><td><label class="price-row-label" style="cursor:default">$99.00</label></td></tr>
+                  </tbody>
+                </table>
+                <p class="price-note">All 45-Min group classes include a 15-minute break.</p>
+              </div>
+
+              <input type="hidden" name="duration" id="sel-duration">
+              <input type="hidden" name="sessionCount" id="sel-sessions">
+              <input type="hidden" name="price" id="sel-price">
+              <input type="hidden" name="package" id="sel-package">
+
+              <!-- Children's health info — only shown for Children's Group -->
+              <div class="form-group" id="children-health-block" style="display:none">
+                <label class="form-label">Allergies / Health Info for This Student (optional)</label>
+                <textarea name="allergyInfo" class="form-textarea" placeholder="Any food/environmental allergies or medical conditions we should know about..."></textarea>
+              </div>
+
               <div class="form-group"><label class="form-label">Notes (optional)</label><textarea name="notes" class="form-textarea" placeholder="Any special requirements, experience level, or other notes..."></textarea></div>
 
               <!-- Payment Method -->
@@ -279,11 +397,16 @@
 
               <div id="payment-note" style="display:none;margin-top:0.75rem;padding:0.9rem 1.1rem;background:var(--yellow);border:2px solid var(--burgundy);border-radius:4px;font-size:0.82rem;color:var(--ink-mid);line-height:1.65"></div>
 
-              <div style="margin-top:1.5rem;padding:1.25rem;background:var(--yellow-dark);border-radius:4px;border:2px solid rgba(130,35,49,0.2)">
-                <p style="font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);font-weight:700;margin-bottom:0.5rem">By submitting you confirm that you have read and agree to the school policies and tuition rates on the next page.</p>
+              <!-- (ت) Acknowledgments — right before the final signature/submit -->
+              <div class="ack-box">
+                <p style="font-family:var(--font-display);font-style:italic;color:var(--burgundy);font-weight:700;margin-bottom:1rem">Acknowledgments — تأییدیه‌ها</p>
+                <label class="ack-checkbox"><input type="checkbox" name="recordingConsent" required> I consent to being recorded/photographed for the school's documentation and social media, as described above.</label>
+                <label class="ack-checkbox"><input type="checkbox" name="cameraConsent" required> I acknowledge the academy's 8-camera security system (audio + video), as described above.</label>
+                <button type="button" class="btn-view-policies" onclick="openPoliciesModal()">📋 View Full Policies</button>
+                <label class="ack-checkbox" style="margin-bottom:0"><input type="checkbox" id="final-agree-checkbox" onchange="updateSubmitState()" required> I have read and agree to all Zangouleh Music School policies above.</label>
               </div>
 
-              <button type="submit" class="btn-primary" style="width:100%;margin-top:1.25rem">Complete Enrollment →</button>
+              <button type="submit" class="btn-primary" style="width:100%;margin-top:1.25rem" id="enroll-submit-btn" disabled>Complete Enrollment →</button>
             </form>
             <div id="enroll-success" class="form-success" style="display:none"></div>
           </div>
@@ -291,17 +414,8 @@
           <!-- Right: package info -->
           <div>
             <h3 style="font-family:var(--font-display);font-size:1.15rem;font-weight:700;color:var(--ink);margin-bottom:1.5rem">Tuition &amp; Packages</h3>
-            <div id="pkg-info-default" style="display:block">
-              <div style="background:var(--yellow-dark);border:2px solid rgba(130,35,49,0.2);border-radius:4px;padding:1.5rem;margin-bottom:1rem">
-                <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--burgundy);font-style:italic;margin-bottom:0.4rem">4-Session Package</div>
-                <div style="font-size:0.8rem;color:var(--ink-mid);line-height:1.6">Introductory package · 4 private or group lessons · Valid 6 weeks · Paid in full at registration</div>
-                <div style="margin-top:0.75rem;font-size:0.72rem;color:var(--ink-soft)">→ Contact us for current rates · +1 647 827 6462</div>
-              </div>
-              <div style="background:var(--yellow-dark);border:2px solid var(--burgundy);border-radius:4px;padding:1.5rem;margin-bottom:1rem">
-                <div style="font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--burgundy);font-style:italic;margin-bottom:0.4rem">12-Session Full Term ⭐</div>
-                <div style="font-size:0.8rem;color:var(--ink-mid);line-height:1.6">Standard term · 12 lessons · Valid 16 weeks · 50% deposit at registration, balance before session 6 · Culminates in a live student concert</div>
-                <div style="margin-top:0.75rem;font-size:0.72rem;color:var(--ink-soft)">→ Contact us for current rates · +1 647 827 6462</div>
-              </div>
+            <div style="background:var(--yellow-dark);border:2px solid rgba(130,35,49,0.2);border-radius:4px;padding:1.5rem;margin-bottom:1rem">
+              <p style="font-size:0.85rem;color:var(--ink-mid);line-height:1.7">Select a <strong>Class Type</strong> in the form to see exact pricing — Private, Adult's Group, or Children's Group classes each have their own rate table by session length and term size.</p>
             </div>
 
             <div style="margin-top:1.5rem;background:var(--yellow-dark);border:2px solid rgba(130,35,49,0.25);border-radius:4px;padding:1.5rem">
@@ -309,8 +423,8 @@
               <p style="font-size:0.8rem;color:var(--ink-mid);line-height:1.65">First-term students may borrow an instrument at no charge — start playing before committing to a purchase.</p>
             </div>
             <div style="margin-top:1rem;background:var(--yellow-dark);border:2px solid rgba(130,35,49,0.25);border-radius:4px;padding:1.5rem">
-              <p style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:var(--burgundy);font-style:italic;margin-bottom:0.4rem">📋 Policies</p>
-              <p style="font-size:0.8rem;color:var(--ink-mid);line-height:1.65;margin-bottom:0.75rem">After submitting, you'll be taken to our full policies &amp; tuition page to review all terms before payment.</p>
+              <p style="font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:var(--burgundy);font-style:italic;margin-bottom:0.4rem">📋 Full Policies Page</p>
+              <p style="font-size:0.8rem;color:var(--ink-mid);line-height:1.65;margin-bottom:0.75rem">You can also review our complete policies &amp; tuition page any time before enrolling.</p>
               <a href="policies.html" class="btn-secondary" style="font-size:0.75rem;padding:0.55rem 1.1rem" target="_blank">Preview Policies ↗</a>
             </div>
             <div style="margin-top:1rem;background:var(--yellow-dark);border:2px solid rgba(130,35,49,0.25);border-radius:4px;padding:1.5rem">
@@ -325,6 +439,17 @@
     </div>
   </div>
 </main>
+
+<!-- Policies modal — reused for the "View Full Policies" acknowledgment step -->
+<div class="policies-modal-overlay" id="policies-modal">
+  <div class="policies-modal-box">
+    <div class="policies-modal-head">
+      <h3>School Policies — قوانین آموزشگاه</h3>
+      <button class="policies-modal-close" onclick="closePoliciesModal()">✕</button>
+    </div>
+    <div class="policies-modal-body" id="policies-modal-body"></div>
+  </div>
+</div>
 <footer>
   <div class="footer-logo">Zangouleh</div><div class="footer-tagline">آموزشگاه موسیقی زنگوله · Est. 2011 · Toronto</div><div class="footer-brand-line">Your First Live Performance After Just 12 Sessions</div>
   <div class="footer-dots"><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div><div class="footer-dot"></div></div>
@@ -384,15 +509,47 @@ function selectPayment(el, method){
   if(method==='inperson') note.innerHTML='<strong>In-Person Payment:</strong> Cash or Interac e-Transfer. After submitting, you will be redirected to our policies page. Please bring payment to your first class or visit us in advance.';
 }
 
-function updatePayment(){}
+function selectClassType(type){
+  document.getElementById('price-private').style.display = type==='private' ? 'block' : 'none';
+  document.getElementById('price-adult').style.display = type==='adult' ? 'block' : 'none';
+  document.getElementById('price-children').style.display = type==='children' ? 'block' : 'none';
+  document.getElementById('req-allergy-card').style.display = type==='children' ? 'block' : 'none';
+  document.getElementById('children-health-block').style.display = type==='children' ? 'block' : 'none';
+  // reset any previously chosen price when class type changes
+  document.querySelectorAll('input[name="priceOption"]').forEach(r=>{r.checked=false;});
+  document.getElementById('sel-duration').value='';
+  document.getElementById('sel-sessions').value='';
+  document.getElementById('sel-price').value='';
+  document.getElementById('sel-package').value='';
+}
+
+function selectPrice(duration, sessions, price, packageLabel){
+  document.getElementById('sel-duration').value = duration;
+  document.getElementById('sel-sessions').value = sessions;
+  document.getElementById('sel-price').value = price;
+  document.getElementById('sel-package').value = packageLabel;
+}
+
+function openPoliciesModal(){
+  document.getElementById('policies-modal-body').innerHTML = document.getElementById('policies-content').innerHTML;
+  document.getElementById('policies-modal').classList.add('open');
+}
+function closePoliciesModal(){
+  document.getElementById('policies-modal').classList.remove('open');
+}
+
+function updateSubmitState(){
+  document.getElementById('enroll-submit-btn').disabled = !document.getElementById('final-agree-checkbox').checked;
+}
 
 async function handleEnroll(e){
   e.preventDefault();
   if(!selectedPayment){ alert('Please select a payment method.'); return; }
+  if(!document.getElementById('sel-package').value){ alert('Please choose a class package from the price table.'); return; }
   var btn=e.target.querySelector('button[type="submit"]');
   var orig=btn.textContent; btn.disabled=true; btn.textContent='Sending…';
   var fd=new FormData(e.target);
-  var data={formType:'enrollment',firstName:fd.get('firstName'),lastName:fd.get('lastName'),phone:fd.get('phone'),email:fd.get('email'),instrument:fd.get('instrument'),instructor:fd.get('instructor'),classTime:fd.get('classTime'),lessonType:fd.get('lessonType'),age:fd.get('age'),package:fd.get('package'),paymentMethod:fd.get('paymentMethod'),notes:fd.get('notes')};
+  var data={formType:'enrollment',firstName:fd.get('firstName'),lastName:fd.get('lastName'),phone:fd.get('phone'),email:fd.get('email'),reference:fd.get('reference'),birthDate:fd.get('birthDate'),instrument:fd.get('instrument'),instructor:fd.get('instructor'),classTime:fd.get('classTime'),classType:fd.get('classType'),age:fd.get('age'),duration:fd.get('duration'),sessionCount:fd.get('sessionCount'),price:fd.get('price'),package:fd.get('package'),allergyInfo:fd.get('allergyInfo'),paymentMethod:fd.get('paymentMethod'),notes:fd.get('notes'),recordingConsent:fd.get('recordingConsent')?'Yes':'No',cameraConsent:fd.get('cameraConsent')?'Yes':'No',policiesAgreed:document.getElementById('final-agree-checkbox').checked?'Yes':'No'};
   try{
     var r=await fetch('/api/send-form',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
     if(!r.ok) throw 0;

@@ -47,18 +47,27 @@ module.exports = async (req, res) => {
       ['Message', d.message || '—']
     ];
   } else if (type === 'enrollment') {
-    subject = `[Enrollment] ${d.firstName} ${d.lastName}`;
+    subject = `[Enrollment] ${d.firstName} ${d.lastName} — ${d.package || 'no package'}`;
     rows = [
       ['Name', `${d.firstName} ${d.lastName}`],
       ['Phone / WhatsApp', d.phone],
       ['Email', d.email],
+      ['Reference', d.reference || '—'],
+      ['Day & Month of Birth', d.birthDate || '—'],
       ['Instrument / Program', d.instrument],
       ['Preferred Instructor', d.instructor || 'School assigned'],
       ['Class Time', d.classTime || '—'],
-      ['Lesson Type', d.lessonType || '—'],
+      ['Class Type', d.classType || '—'],
       ['Student Age', d.age || '—'],
       ['Package', d.package || '—'],
+      ['Duration', d.duration || '—'],
+      ['Sessions', d.sessionCount || '—'],
+      ['Price', d.price ? `$${d.price}.00` : '—'],
+      ['Allergy / Health Info', d.allergyInfo || '—'],
       ['Payment Method', d.paymentMethod || '—'],
+      ['Recording Consent', d.recordingConsent || '—'],
+      ['Camera Consent', d.cameraConsent || '—'],
+      ['Policies Agreed', d.policiesAgreed || '—'],
       ['Notes', d.notes || '—']
     ];
   } else if (type === 'workshop') {
