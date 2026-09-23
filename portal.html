@@ -156,7 +156,8 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
         <div class="dash-section-title">Add / Update Payment</div>
         <div class="dash-form">
           <div class="dash-form-row">
-            <div><label>Student Email</label><input type="email" id="pay-student-email" placeholder="student@email.com"></div>
+            <div><label>Student Email</label><input type="email" id="pay-student-email" placeholder="student@email.com" onblur="resolveEnrollmentPicker('pay-student-email','pay-enrollment','pay-enrollment-note')"></div>
+            <div><label>Enrollment</label><select id="pay-enrollment"><option value="">— none / legacy —</option></select></div>
             <div><label>Amount (CAD $)</label><input type="number" id="pay-amount" placeholder="240"></div>
             <div><label>Package</label><select id="pay-package"><option value="consultation">Consultation</option><option value="4-session">4-Session</option><option value="12-session">12-Session Term</option></select></div>
             <div><label>Total Sessions</label><input type="number" id="pay-total-sessions" placeholder="12"></div>
@@ -166,14 +167,15 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
           <div class="dash-form-actions">
             <button class="btn-dash btn-dash-primary" onclick="upsertPayment()">Save Payment</button>
             <span id="pay-msg" style="font-size:.8rem;color:var(--burgundy)"></span>
+            <span id="pay-enrollment-note" style="font-size:.78rem;color:var(--ink-soft)"></span>
           </div>
         </div>
 
         <div class="dash-section-title">Student Payments</div>
         <div class="dash-table-wrap">
           <table class="dash-table">
-            <thead><tr><th>Student</th><th>Package</th><th>Amount</th><th>Status</th><th>Due Date</th><th>Action</th></tr></thead>
-            <tbody id="admin-payments-body"><tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
+            <thead><tr><th>Student</th><th>Enrollment</th><th>Package</th><th>Amount</th><th>Status</th><th>Due Date</th><th>Action</th></tr></thead>
+            <tbody id="admin-payments-body"><tr><td colspan="7" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
           </table>
         </div>
 
@@ -218,10 +220,11 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
         </div>
 
         <div class="dash-section-title">Add Student to My Roster</div>
+        <p style="font-size:.78rem;color:var(--ink-soft);margin-top:-.5rem;margin-bottom:.75rem">A student can be enrolled with more than one teacher (e.g. different instruments) — Instrument is required so each enrollment is distinct.</p>
         <div class="dash-form">
           <div class="dash-form-row">
             <div><label>Student Email (must have already signed up)</label><input type="email" id="claim-student-email" placeholder="student@email.com"></div>
-            <div><label>Instrument</label><input type="text" id="claim-instrument" placeholder="Santour"></div>
+            <div><label>Instrument</label><input type="text" id="claim-instrument" placeholder="Santour" required></div>
           </div>
           <div class="dash-form-actions">
             <button class="btn-dash btn-dash-primary" onclick="claimStudent()">Add Student</button>
@@ -232,7 +235,8 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
         <div class="dash-section-title">Record Payment</div>
         <div class="dash-form">
           <div class="dash-form-row">
-            <div><label>Student Email</label><input type="email" id="t-pay-student-email" placeholder="student@email.com"></div>
+            <div><label>Student Email</label><input type="email" id="t-pay-student-email" placeholder="student@email.com" onblur="resolveEnrollmentPicker('t-pay-student-email','t-pay-enrollment','t-pay-enrollment-note',currentUserId)"></div>
+            <div><label>Enrollment</label><select id="t-pay-enrollment"><option value="">— none / legacy —</option></select></div>
             <div><label>Amount (CAD $)</label><input type="number" id="t-pay-amount" placeholder="240"></div>
             <div><label>Package</label><select id="t-pay-package"><option value="consultation">Consultation</option><option value="4-session">4-Session</option><option value="12-session">12-Session Term</option></select></div>
             <div><label>Total Sessions</label><input type="number" id="t-pay-total-sessions" placeholder="12"></div>
@@ -242,13 +246,15 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
           <div class="dash-form-actions">
             <button class="btn-dash btn-dash-primary" onclick="teacherUpsertPayment()">Save Payment</button>
             <span id="t-pay-msg" style="font-size:.8rem;color:var(--burgundy)"></span>
+            <span id="t-pay-enrollment-note" style="font-size:.78rem;color:var(--ink-soft)"></span>
           </div>
         </div>
 
         <div class="dash-section-title">Record Attendance</div>
         <div class="dash-form">
           <div class="dash-form-row">
-            <div><label>Student Email</label><input type="email" id="att-student-email" placeholder="student@email.com"></div>
+            <div><label>Student Email</label><input type="email" id="att-student-email" placeholder="student@email.com" onblur="resolveEnrollmentPicker('att-student-email','att-enrollment','att-enrollment-note',currentUserId)"></div>
+            <div><label>Enrollment</label><select id="att-enrollment"><option value="">— none / legacy —</option></select></div>
             <div><label>Date</label><input type="date" id="att-date"></div>
             <div><label>Status</label><select id="att-status"><option value="present">Present</option><option value="excused">Excused Absence</option><option value="unexcused">Unexcused Absence</option></select></div>
             <div><label>Notes (optional)</label><input type="text" id="att-notes" placeholder="Practiced scales…"></div>
@@ -256,6 +262,7 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
           <div class="dash-form-actions">
             <button class="btn-dash btn-dash-primary" onclick="recordAttendance()">Save Attendance</button>
             <span id="att-msg" style="font-size:.8rem;color:var(--burgundy)"></span>
+            <span id="att-enrollment-note" style="font-size:.78rem;color:var(--ink-soft)"></span>
           </div>
         </div>
 
@@ -294,30 +301,8 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
         <div><h2>My Portal &nbsp;<span class="role-badge role-student">Student</span></h2><p id="student-email-display"></p></div>
         <button class="dash-signout" onclick="signOut()">Sign Out</button>
       </div>
-      <div class="dash-body">
-        <div class="dash-grid">
-          <div class="dash-stat"><div class="dash-stat-num" id="s-stat-left">–</div><div class="dash-stat-label">Sessions Left</div></div>
-          <div class="dash-stat"><div class="dash-stat-num" id="s-stat-sessions">–</div><div class="dash-stat-label">Sessions Attended</div></div>
-          <div class="dash-stat"><div class="dash-stat-num" id="s-stat-paid" style="font-size:1.5rem">–</div><div class="dash-stat-label">Last Tuition Paid</div></div>
-          <div class="dash-stat"><div class="dash-stat-num" id="s-stat-next" style="font-size:1.2rem;color:var(--ink-mid)">–</div><div class="dash-stat-label">Next Payment Due</div></div>
-          <div class="dash-stat"><div class="dash-stat-num" id="s-stat-status">–</div><div class="dash-stat-label">Payment Status</div></div>
-        </div>
-
-        <div class="dash-section-title">My Attendance</div>
-        <div class="dash-table-wrap">
-          <table class="dash-table">
-            <thead><tr><th>Date</th><th>Status</th><th>Notes from Teacher</th></tr></thead>
-            <tbody id="student-attendance-body"><tr><td colspan="3" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
-          </table>
-        </div>
-
-        <div class="dash-section-title">Payment History</div>
-        <div class="dash-table-wrap">
-          <table class="dash-table">
-            <thead><tr><th>Package</th><th>Amount</th><th>Status</th><th>Due Date</th><th></th></tr></thead>
-            <tbody id="student-payments-body"><tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
-          </table>
-        </div>
+      <div class="dash-body" id="student-enrollments-body">
+        <p style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</p>
       </div>
     </div>
 
@@ -347,6 +332,33 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
 
 <script>
 function toggleNav(){document.getElementById('navLinks').classList.toggle('open');}
+
+let currentUserId=null;
+function esc(s){return String(s??'–').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// Shared: given a student-email field, look up that student's enrollments
+// (optionally restricted to one teacher) and populate a <select> with them.
+// Used by every "record a payment / attendance for this student" form, since
+// a student can now have more than one enrollment (different teachers and/or
+// instruments) and we need to know exactly which one a payment/session
+// belongs to.
+async function resolveEnrollmentPicker(emailFieldId,selectFieldId,noteFieldId,teacherId){
+  const email=document.getElementById(emailFieldId).value.trim();
+  const select=document.getElementById(selectFieldId);
+  const note=noteFieldId?document.getElementById(noteFieldId):null;
+  select.innerHTML='<option value="">— none / legacy —</option>';
+  if(note)note.textContent='';
+  if(!email)return;
+  const {data:profile}=await sb.from('profiles').select('id').eq('email',email).eq('role','student').maybeSingle();
+  if(!profile){if(note)note.textContent='Student not found.';return;}
+  let query=sb.from('enrollments').select('*').eq('student_id',profile.id);
+  if(teacherId)query=query.eq('teacher_id',teacherId);
+  const {data:enrollments}=await query;
+  if(!enrollments?.length){if(note)note.textContent='No enrollments found for this student yet — save will be unassigned.';return;}
+  select.innerHTML='<option value="">— none / legacy —</option>'+
+    enrollments.map(e=>`<option value="${e.id}">${esc(e.instrument||'—')} — ${esc(e.teacher_name||'—')}</option>`).join('');
+  if(enrollments.length===1)select.value=String(enrollments[0].id);
+}
 
 // Shared: given a student's payments + attendance rows, compute sessions left
 // in their current (most recent) package. Present + unexcused absences both
@@ -486,6 +498,7 @@ async function loadDashboard(user){
   document.getElementById('portal-signup').style.display='none';
   document.getElementById('portal-forgot').style.display='none';
   document.getElementById('portal-dashboard').style.display='block';
+  currentUserId=user.id;
   const {data:profile}=await sb.from('profiles').select('*').eq('id',user.id).single();
   const role=profile?.role||'student';
   if(role==='admin'){
@@ -505,44 +518,65 @@ async function loadDashboard(user){
 
 // ── ADMIN ──
 async function loadAdminData(){
-  const [{data:students},{data:teachers},{data:payments}]=await Promise.all([
+  const [{data:students},{data:teachers},{data:payments},{data:enrollments}]=await Promise.all([
     sb.from('profiles').select('*').eq('role','student'),
     sb.from('profiles').select('*').eq('role','teacher'),
-    sb.from('payments').select('*').order('due_date',{ascending:true})
+    sb.from('payments').select('*').order('due_date',{ascending:true}),
+    sb.from('enrollments').select('*')
   ]);
   document.getElementById('stat-students').textContent=students?.length??0;
   document.getElementById('stat-teachers').textContent=teachers?.length??0;
   document.getElementById('stat-paid').textContent=payments?.filter(p=>p.status==='paid').length??0;
   document.getElementById('stat-unpaid').textContent=payments?.filter(p=>p.status!=='paid').length??0;
 
+  const enrollById=new Map((enrollments||[]).map(e=>[e.id,e]));
+
   const pb=document.getElementById('admin-payments-body');
   pb.innerHTML=payments?.length
-    ?payments.map(p=>`<tr>
-      <td>${p.student_email}</td><td>${p.package||'–'}</td><td>$${p.amount}</td>
+    ?payments.map(p=>{
+      const e=p.enrollment_id?enrollById.get(p.enrollment_id):null;
+      return `<tr>
+      <td>${p.student_email}</td>
+      <td>${e?`${esc(e.instrument)} — ${esc(e.teacher_name)}`:'–'}</td>
+      <td>${p.package||'–'}</td><td>$${p.amount}</td>
       <td><span class="badge ${p.status==='paid'?'badge-green':p.status==='overdue'?'badge-red':'badge-yellow'}">${p.status}</span></td>
       <td>${p.due_date||'–'}</td>
       <td>${p.status!=='paid'?`<button class="btn-mark-paid" onclick="markPaid('${p.id}')">Mark Paid</button>`:'–'}</td>
-    </tr>`).join('')
-    :'<tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:2rem">No payments yet.</td></tr>';
+    </tr>`;
+    }).join('')
+    :'<tr><td colspan="7" style="text-align:center;color:var(--ink-soft);padding:2rem">No payments yet.</td></tr>';
 
   const sb2=document.getElementById('admin-students-body');
-  sb2.innerHTML=students?.length
-    ?students.map(s=>`<tr>
-      <td>${s.full_name||'–'}</td><td>${s.email||'–'}</td><td>${s.instrument||'–'}</td>
-      <td>${s.teacher_name||'–'}</td>
-      <td>
-        <select onchange="setEnrolledVia('${s.id}',this.value)" style="padding:.25rem .4rem;font-size:.8rem;border-radius:4px;border:1px solid rgba(130,35,49,.25)">
-          <option value="school" ${s.enrolled_via!=='instructor'?'selected':''}>School (60/40)</option>
-          <option value="instructor" ${s.enrolled_via==='instructor'?'selected':''}>Instructor (70/30)</option>
-        </select>
-      </td>
-      <td>${s.created_at?new Date(s.created_at).toLocaleDateString():'–'}</td>
-    </tr>`).join('')
-    :'<tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:2rem">No students yet.</td></tr>';
+  const rows=[];
+  (students||[]).forEach(s=>{
+    const myEnrollments=(enrollments||[]).filter(e=>e.student_id===s.id);
+    if(!myEnrollments.length){
+      rows.push(`<tr>
+        <td>${esc(s.full_name)}</td><td>${esc(s.email)}</td><td>–</td><td>–</td>
+        <td style="color:var(--ink-soft)">Not enrolled yet</td>
+        <td>${s.created_at?new Date(s.created_at).toLocaleDateString():'–'}</td>
+      </tr>`);
+      return;
+    }
+    myEnrollments.forEach(e=>{
+      rows.push(`<tr>
+        <td>${esc(s.full_name)}</td><td>${esc(s.email)}</td><td>${esc(e.instrument)}</td>
+        <td>${esc(e.teacher_name)}</td>
+        <td>
+          <select onchange="setEnrolledVia(${e.id},this.value)" style="padding:.25rem .4rem;font-size:.8rem;border-radius:4px;border:1px solid rgba(130,35,49,.25)">
+            <option value="school" ${e.enrolled_via!=='instructor'?'selected':''}>School (60/40)</option>
+            <option value="instructor" ${e.enrolled_via==='instructor'?'selected':''}>Instructor (70/30)</option>
+          </select>
+        </td>
+        <td>${s.created_at?new Date(s.created_at).toLocaleDateString():'–'}</td>
+      </tr>`);
+    });
+  });
+  sb2.innerHTML=rows.length?rows.join(''):'<tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:2rem">No students yet.</td></tr>';
 }
 
-async function setEnrolledVia(studentId,value){
-  await sb.from('profiles').update({enrolled_via:value}).eq('id',studentId);
+async function setEnrolledVia(enrollmentId,value){
+  await sb.from('enrollments').update({enrolled_via:value}).eq('id',enrollmentId);
 }
 
 async function markPaid(id){
@@ -552,6 +586,7 @@ async function markPaid(id){
 
 async function upsertPayment(){
   const email=document.getElementById('pay-student-email').value.trim();
+  const enrollmentId=document.getElementById('pay-enrollment').value;
   const amount=document.getElementById('pay-amount').value;
   const pkg=document.getElementById('pay-package').value;
   const totalSessions=document.getElementById('pay-total-sessions').value;
@@ -559,7 +594,7 @@ async function upsertPayment(){
   const due=document.getElementById('pay-due-date').value;
   const msg=document.getElementById('pay-msg');
   if(!email||!amount){msg.textContent='Email and amount required.';return;}
-  const {error}=await sb.from('payments').insert({student_email:email,amount:parseFloat(amount),package:pkg,total_sessions:totalSessions?parseInt(totalSessions):null,status,due_date:due||null});
+  const {error}=await sb.from('payments').insert({student_email:email,enrollment_id:enrollmentId?parseInt(enrollmentId):null,amount:parseFloat(amount),package:pkg,total_sessions:totalSessions?parseInt(totalSessions):null,status,due_date:due||null});
   if(error){msg.textContent='Error: '+error.message;}
   else{msg.textContent='✓ Saved!';loadAdminData();setTimeout(()=>{msg.textContent='';},3000);}
 }
@@ -578,9 +613,9 @@ async function loadPayroll(){
   // passes are counted cumulatively from the package's start_date (the
   // whole term), not reset each month, so we need the full history to
   // know how many free passes were already used before this month.
-  const [{data:teachers},{data:students},{data:payments},{data:attendance}]=await Promise.all([
+  const [{data:teachers},{data:enrollments},{data:payments},{data:attendance}]=await Promise.all([
     sb.from('profiles').select('*').eq('role','teacher'),
-    sb.from('profiles').select('*').eq('role','student').not('teacher_id','is',null),
+    sb.from('enrollments').select('*'),
     sb.from('payments').select('*'),
     sb.from('attendance').select('*')
   ]);
@@ -588,22 +623,22 @@ async function loadPayroll(){
   if(!teachers?.length){body.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:2rem">No teachers yet.</td></tr>';return;}
 
   const rows=teachers.map(t=>{
-    const myStudents=(students||[]).filter(s=>s.teacher_id===t.id);
+    const myEnrollments=(enrollments||[]).filter(e=>e.teacher_id===t.id);
     let billable=0, revenue=0, payout=0, schoolCut=0;
     const splits=new Set();
-    myStudents.forEach(s=>{
-      const studentPayments=(payments||[]).filter(p=>p.student_email===s.email);
-      const pkg=currentPackageFor(studentPayments);
+    myEnrollments.forEach(e=>{
+      const enrollmentPayments=(payments||[]).filter(p=>p.enrollment_id===e.id);
+      const pkg=currentPackageFor(enrollmentPayments);
       if(!pkg)return;
       const rate=pkg.amount/pkg.total_sessions;
-      const studentAtt=(attendance||[]).filter(a=>a.student_id===s.id);
-      const studentBillable=computeBillableForMonth(pkg, studentAtt, monthStart, nextMonth);
-      const studentRevenue=studentBillable*rate;
-      const teacherPct=s.enrolled_via==='instructor'?0.70:0.60;
-      billable+=studentBillable;
-      revenue+=studentRevenue;
-      payout+=studentRevenue*teacherPct;
-      schoolCut+=studentRevenue*(1-teacherPct);
+      const enrollmentAtt=(attendance||[]).filter(a=>a.enrollment_id===e.id);
+      const enrollmentBillable=computeBillableForMonth(pkg, enrollmentAtt, monthStart, nextMonth);
+      const enrollmentRevenue=enrollmentBillable*rate;
+      const teacherPct=e.enrolled_via==='instructor'?0.70:0.60;
+      billable+=enrollmentBillable;
+      revenue+=enrollmentRevenue;
+      payout+=enrollmentRevenue*teacherPct;
+      schoolCut+=enrollmentRevenue*(1-teacherPct);
       splits.add(teacherPct===0.70?'70/30':'60/40');
     });
     return {name:t.full_name||t.email, billable, revenue, payout, schoolCut, splits:[...splits].join(', ')||'–'};
@@ -620,25 +655,30 @@ async function loadPayroll(){
 
 // ── TEACHER ──
 async function loadTeacherData(user){
-  const {data:students}=await sb.from('profiles').select('*').eq('teacher_id',user.id);
+  const {data:enrollments}=await sb.from('enrollments').select('*').eq('teacher_id',user.id);
   const now=new Date();
   const {data:sessions}=await sb.from('attendance').select('*').eq('teacher_id',user.id)
     .gte('date',`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`);
-  document.getElementById('t-stat-students').textContent=students?.length??0;
+  document.getElementById('t-stat-students').textContent=enrollments?.length??0;
   document.getElementById('t-stat-sessions').textContent=sessions?.length??0;
   document.getElementById('att-date').value=now.toISOString().split('T')[0];
   document.getElementById('grid-month').value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 
   const tbody=document.getElementById('teacher-students-body');
-  if(!students?.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">No students assigned yet.</td></tr>';return;}
-  const {data:allAtt}=await sb.from('attendance').select('*').in('student_id',students.map(s=>s.id));
-  const {data:allPay}=await sb.from('payments').select('*').in('student_email',students.map(s=>s.email));
-  tbody.innerHTML=students.map(s=>{
-    const att=(allAtt||[]).filter(a=>a.student_id===s.id);
-    const pay=(allPay||[]).filter(p=>p.student_email===s.email);
+  if(!enrollments?.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">No students assigned yet.</td></tr>';return;}
+  const studentIds=[...new Set(enrollments.map(e=>e.student_id))];
+  const {data:studentProfiles}=await sb.from('profiles').select('*').in('id',studentIds);
+  const profileById=new Map((studentProfiles||[]).map(p=>[p.id,p]));
+  const enrollmentIds=enrollments.map(e=>e.id);
+  const {data:allAtt}=await sb.from('attendance').select('*').in('enrollment_id',enrollmentIds);
+  const {data:allPay}=await sb.from('payments').select('*').in('enrollment_id',enrollmentIds);
+  tbody.innerHTML=enrollments.map(e=>{
+    const s=profileById.get(e.student_id);
+    const att=(allAtt||[]).filter(a=>a.enrollment_id===e.id);
+    const pay=(allPay||[]).filter(p=>p.enrollment_id===e.id);
     const last=att.sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
     const left=computeSessionsLeft(pay,att);
-    return `<tr><td>${s.full_name||'–'}</td><td>${s.instrument||'–'}</td><td>${left===null?'–':left}</td><td>${last?last.date:'–'}</td><td>${last?.notes||'–'}</td></tr>`;
+    return `<tr><td>${esc(s?.full_name)}</td><td>${esc(e.instrument)}</td><td>${left===null?'–':left}</td><td>${last?last.date:'–'}</td><td>${esc(last?.notes)}</td></tr>`;
   }).join('');
 }
 
@@ -647,14 +687,21 @@ async function claimStudent(){
   const email=document.getElementById('claim-student-email').value.trim();
   const instrument=document.getElementById('claim-instrument').value.trim();
   const msg=document.getElementById('claim-msg');
-  if(!email){msg.textContent='Student email required.';return;}
+  if(!email||!instrument){msg.textContent='Student email and instrument are both required.';return;}
+  const {data:studentProfile}=await sb.from('profiles').select('id').eq('email',email).eq('role','student').maybeSingle();
+  if(!studentProfile){msg.textContent='Student not found, or has not signed up yet.';return;}
   const {data:teacherProfile}=await sb.from('profiles').select('full_name').eq('id',session.user.id).single();
-  const update={teacher_id:session.user.id};
-  if(instrument)update.instrument=instrument;
-  if(teacherProfile?.full_name)update.teacher_name=teacherProfile.full_name;
-  const {data,error}=await sb.from('profiles').update(update).eq('email',email).eq('role','student').select();
-  if(error){msg.textContent='Error: '+error.message;return;}
-  if(!data?.length){msg.textContent='Student not found, already assigned to another teacher, or has not signed up yet.';return;}
+  const {error}=await sb.from('enrollments').insert({
+    student_id:studentProfile.id,
+    teacher_id:session.user.id,
+    teacher_name:teacherProfile?.full_name||null,
+    instrument,
+    enrolled_via:'school'
+  });
+  if(error){
+    msg.textContent=error.code==='23505'?'Already enrolled with you for this instrument.':'Error: '+error.message;
+    return;
+  }
   msg.textContent='✓ Student added!';
   document.getElementById('claim-student-email').value='';
   document.getElementById('claim-instrument').value='';
@@ -664,6 +711,7 @@ async function claimStudent(){
 
 async function teacherUpsertPayment(){
   const email=document.getElementById('t-pay-student-email').value.trim();
+  const enrollmentId=document.getElementById('t-pay-enrollment').value;
   const amount=document.getElementById('t-pay-amount').value;
   const pkg=document.getElementById('t-pay-package').value;
   const totalSessions=document.getElementById('t-pay-total-sessions').value;
@@ -671,7 +719,7 @@ async function teacherUpsertPayment(){
   const due=document.getElementById('t-pay-due-date').value;
   const msg=document.getElementById('t-pay-msg');
   if(!email||!amount){msg.textContent='Email and amount required.';return;}
-  const {error}=await sb.from('payments').insert({student_email:email,amount:parseFloat(amount),package:pkg,total_sessions:totalSessions?parseInt(totalSessions):null,status,due_date:due||null});
+  const {error}=await sb.from('payments').insert({student_email:email,enrollment_id:enrollmentId?parseInt(enrollmentId):null,amount:parseFloat(amount),package:pkg,total_sessions:totalSessions?parseInt(totalSessions):null,status,due_date:due||null});
   if(error){msg.textContent='Error: '+error.message;}
   else{msg.textContent='✓ Saved!';setTimeout(()=>{msg.textContent='';},3000);}
 }
@@ -679,6 +727,7 @@ async function teacherUpsertPayment(){
 async function recordAttendance(){
   const {data:{session}}=await sb.auth.getSession();
   const email=document.getElementById('att-student-email').value.trim();
+  const enrollmentId=document.getElementById('att-enrollment').value;
   const date=document.getElementById('att-date').value;
   const status=document.getElementById('att-status').value;
   const notes=document.getElementById('att-notes').value.trim();
@@ -686,7 +735,7 @@ async function recordAttendance(){
   if(!email||!date){msg.textContent='Email and date required.';return;}
   const {data:profile}=await sb.from('profiles').select('id').eq('email',email).single();
   if(!profile){msg.textContent='Student not found.';return;}
-  const {error}=await sb.from('attendance').insert({student_id:profile.id,teacher_id:session.user.id,date,status,notes:notes||null});
+  const {error}=await sb.from('attendance').insert({student_id:profile.id,teacher_id:session.user.id,enrollment_id:enrollmentId?parseInt(enrollmentId):null,date,status,notes:notes||null});
   if(error){msg.textContent='Error: '+error.message;}
   else{msg.textContent='✓ Saved!';loadTeacherData(session.user);setTimeout(()=>{msg.textContent='';},3000);}
 }
@@ -707,10 +756,14 @@ async function loadAttendanceGrid(){
   const monthStart=`${y}-${String(m).padStart(2,'0')}-01`;
   const nextMonth=m===12?`${y+1}-01-01`:`${y}-${String(m+1).padStart(2,'0')}-01`;
 
-  const {data:students}=await sb.from('profiles').select('*').eq('teacher_id',session.user.id);
-  if(!students?.length){body.innerHTML='<tr><td style="text-align:center;color:var(--ink-soft);padding:2rem">No students assigned yet.</td></tr>';return;}
-  const {data:payments}=await sb.from('payments').select('*').in('student_email',students.map(s=>s.email));
-  const {data:attendance}=await sb.from('attendance').select('*').in('student_id',students.map(s=>s.id));
+  const {data:enrollments}=await sb.from('enrollments').select('*').eq('teacher_id',session.user.id);
+  if(!enrollments?.length){body.innerHTML='<tr><td style="text-align:center;color:var(--ink-soft);padding:2rem">No students assigned yet.</td></tr>';return;}
+  const studentIds=[...new Set(enrollments.map(e=>e.student_id))];
+  const {data:studentProfiles}=await sb.from('profiles').select('id,full_name,email').in('id',studentIds);
+  const profileById=new Map((studentProfiles||[]).map(p=>[p.id,p]));
+  const enrollmentIds=enrollments.map(e=>e.id);
+  const {data:payments}=await sb.from('payments').select('*').in('enrollment_id',enrollmentIds);
+  const {data:attendance}=await sb.from('attendance').select('*').in('enrollment_id',enrollmentIds);
 
   // header
   const thead=table.querySelector('thead tr');
@@ -722,16 +775,17 @@ async function loadAttendanceGrid(){
   let totalBillable=0, totalRevenue=0, totalPayout=0;
   const splits=new Set();
 
-  body.innerHTML=students.map(s=>{
-    const studentPayments=(payments||[]).filter(p=>p.student_email===s.email);
-    const pkg=currentPackageFor(studentPayments);
-    const studentAtt=(attendance||[]).filter(a=>a.student_id===s.id);
-    const left=computeSessionsLeft(studentPayments,studentAtt);
+  body.innerHTML=enrollments.map(e=>{
+    const s=profileById.get(e.student_id);
+    const enrollmentPayments=(payments||[]).filter(p=>p.enrollment_id===e.id);
+    const pkg=currentPackageFor(enrollmentPayments);
+    const enrollmentAtt=(attendance||[]).filter(a=>a.enrollment_id===e.id);
+    const left=computeSessionsLeft(enrollmentPayments,enrollmentAtt);
 
     if(pkg){
       const rate=pkg.amount/pkg.total_sessions;
-      const billable=computeBillableForMonth(pkg,studentAtt,monthStart,nextMonth);
-      const teacherPct=s.enrolled_via==='instructor'?0.70:0.60;
+      const billable=computeBillableForMonth(pkg,enrollmentAtt,monthStart,nextMonth);
+      const teacherPct=e.enrolled_via==='instructor'?0.70:0.60;
       totalBillable+=billable;
       totalRevenue+=billable*rate;
       totalPayout+=billable*rate*teacherPct;
@@ -741,12 +795,13 @@ async function loadAttendanceGrid(){
     let cells='';
     for(let d=1;d<=daysInMonth;d++){
       const dateStr=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const rec=studentAtt.find(a=>a.date===dateStr);
+      const rec=enrollmentAtt.find(a=>a.date===dateStr);
       const status=rec?rec.status:null;
       const symbol=status?ATT_SYMBOL[status]:'';
-      cells+=`<td style="text-align:center;padding:.2rem"><button type="button" class="att-cell ${status||''}" onclick="toggleAttendanceCell(this,'${s.id}','${dateStr}')">${symbol}</button></td>`;
+      cells+=`<td style="text-align:center;padding:.2rem"><button type="button" class="att-cell ${status||''}" onclick="toggleAttendanceCell(this,${e.id},'${e.student_id}','${dateStr}')">${symbol}</button></td>`;
     }
-    return `<tr><td class="att-grid-name">${s.full_name||s.email}</td>${cells}<td class="att-grid-left">${left===null?'–':left}</td></tr>`;
+    const label=`${s?.full_name||s?.email||'–'} — ${e.instrument}`;
+    return `<tr><td class="att-grid-name">${esc(label)}</td>${cells}<td class="att-grid-left">${left===null?'–':left}</td></tr>`;
   }).join('');
 
   const summary=document.getElementById('grid-payroll-summary');
@@ -756,7 +811,7 @@ async function loadAttendanceGrid(){
   msg.textContent='';
 }
 
-async function toggleAttendanceCell(btn,studentId,dateStr){
+async function toggleAttendanceCell(btn,enrollmentId,studentId,dateStr){
   const {data:{session}}=await sb.auth.getSession();
   const current=ATT_CYCLE.find(s=>s===(btn.classList.contains('present')?'present':btn.classList.contains('excused')?'excused':btn.classList.contains('unexcused')?'unexcused':null));
   const idx=ATT_CYCLE.indexOf(current);
@@ -764,13 +819,13 @@ async function toggleAttendanceCell(btn,studentId,dateStr){
 
   btn.disabled=true;
   if(next===null){
-    await sb.from('attendance').delete().eq('student_id',studentId).eq('date',dateStr).eq('teacher_id',session.user.id);
+    await sb.from('attendance').delete().eq('enrollment_id',enrollmentId).eq('date',dateStr).eq('teacher_id',session.user.id);
   } else {
-    const {data:existing}=await sb.from('attendance').select('id').eq('student_id',studentId).eq('date',dateStr).maybeSingle();
+    const {data:existing}=await sb.from('attendance').select('id').eq('enrollment_id',enrollmentId).eq('date',dateStr).maybeSingle();
     if(existing){
       await sb.from('attendance').update({status:next}).eq('id',existing.id);
     } else {
-      await sb.from('attendance').insert({student_id:studentId,teacher_id:session.user.id,date:dateStr,status:next});
+      await sb.from('attendance').insert({student_id:studentId,teacher_id:session.user.id,enrollment_id:enrollmentId,date:dateStr,status:next});
     }
   }
   btn.disabled=false;
@@ -778,29 +833,48 @@ async function toggleAttendanceCell(btn,studentId,dateStr){
 }
 
 // ── STUDENT ──
+// A student can now have more than one enrollment (different teachers
+// and/or instruments), so the dashboard renders one self-contained block
+// per enrollment — sessions-left/attendance/payments must never blend
+// across two different teachers' packages.
 async function loadStudentData(user){
-  const [{data:att},{data:payments}]=await Promise.all([
+  const container=document.getElementById('student-enrollments-body');
+  const [{data:enrollments},{data:att},{data:payments}]=await Promise.all([
+    sb.from('enrollments').select('*').eq('student_id',user.id),
     sb.from('attendance').select('*').eq('student_id',user.id).order('date',{ascending:false}),
     sb.from('payments').select('*').eq('student_email',user.email).order('due_date',{ascending:false})
   ]);
+
+  const blocks=(enrollments||[]).map(e=>renderEnrollmentBlock(
+    `${e.instrument} with ${e.teacher_name||'—'}`,
+    (att||[]).filter(a=>a.enrollment_id===e.id),
+    (payments||[]).filter(p=>p.enrollment_id===e.id)
+  ));
+
+  const unassignedAtt=(att||[]).filter(a=>!a.enrollment_id);
+  const unassignedPay=(payments||[]).filter(p=>!p.enrollment_id);
+  if(unassignedAtt.length||unassignedPay.length){
+    blocks.push(renderEnrollmentBlock('Unassigned / legacy records',unassignedAtt,unassignedPay));
+  }
+
+  container.innerHTML=blocks.length?blocks.join('')
+    :'<p style="text-align:center;color:var(--ink-soft);padding:2rem">Not enrolled with a teacher yet.</p>';
+}
+
+function renderEnrollmentBlock(title,att,payments){
   const left=computeSessionsLeft(payments,att);
-  document.getElementById('s-stat-left').textContent=left===null?'–':left;
-  document.getElementById('s-stat-sessions').textContent=att?.filter(a=>a.status==='present').length??0;
-  const lastPaid=payments?.find(p=>p.status==='paid');
-  document.getElementById('s-stat-paid').textContent=lastPaid?`$${lastPaid.amount}`:'$0';
-  const nextDue=payments?.find(p=>p.status!=='paid');
-  document.getElementById('s-stat-next').textContent=nextDue?`$${nextDue.amount}`:'None';
-  document.getElementById('s-stat-status').innerHTML=nextDue
+  const sessionsAttended=att.filter(a=>a.status==='present').length;
+  const lastPaid=payments.find(p=>p.status==='paid');
+  const nextDue=payments.find(p=>p.status!=='paid');
+  const statusBadge=nextDue
     ?`<span class="badge ${nextDue.status==='overdue'?'badge-red':'badge-yellow'}">${nextDue.status}</span>`
     :'<span class="badge badge-green">All clear</span>';
 
-  const atbody=document.getElementById('student-attendance-body');
-  atbody.innerHTML=att?.length
-    ?att.map(a=>`<tr><td>${a.date}</td><td><span class="badge ${a.status==='present'?'badge-green':a.status==='unexcused'?'badge-red':'badge-yellow'}">${a.status}</span></td><td>${a.notes||'–'}</td></tr>`).join('')
+  const attRows=att.length
+    ?att.map(a=>`<tr><td>${a.date}</td><td><span class="badge ${a.status==='present'?'badge-green':a.status==='unexcused'?'badge-red':'badge-yellow'}">${a.status}</span></td><td>${esc(a.notes)}</td></tr>`).join('')
     :'<tr><td colspan="3" style="text-align:center;color:var(--ink-soft);padding:2rem">No sessions recorded yet.</td></tr>';
 
-  const pbody=document.getElementById('student-payments-body');
-  pbody.innerHTML=payments?.length
+  const payRows=payments.length
     ?payments.map(p=>`<tr>
       <td>${p.package||'–'}</td><td>$${p.amount}</td>
       <td><span class="badge ${p.status==='paid'?'badge-green':p.status==='overdue'?'badge-red':'badge-yellow'}">${p.status}</span></td>
@@ -808,6 +882,28 @@ async function loadStudentData(user){
       <td>${p.status!=='paid'?`<button class="btn-mark-paid" style="background:#0070ba" onclick="openPaypalModal(${p.id},${p.amount})">Pay Now</button>`:'–'}</td>
     </tr>`).join('')
     :'<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">No payment records yet.</td></tr>';
+
+  return `
+    <div class="dash-section-title">${esc(title)}</div>
+    <div class="dash-grid">
+      <div class="dash-stat"><div class="dash-stat-num">${left===null?'–':left}</div><div class="dash-stat-label">Sessions Left</div></div>
+      <div class="dash-stat"><div class="dash-stat-num">${sessionsAttended}</div><div class="dash-stat-label">Sessions Attended</div></div>
+      <div class="dash-stat"><div class="dash-stat-num" style="font-size:1.5rem">${lastPaid?`$${lastPaid.amount}`:'$0'}</div><div class="dash-stat-label">Last Tuition Paid</div></div>
+      <div class="dash-stat"><div class="dash-stat-num" style="font-size:1.2rem;color:var(--ink-mid)">${nextDue?`$${nextDue.amount}`:'None'}</div><div class="dash-stat-label">Next Payment Due</div></div>
+      <div class="dash-stat"><div class="dash-stat-num">${statusBadge}</div><div class="dash-stat-label">Payment Status</div></div>
+    </div>
+    <div class="dash-table-wrap">
+      <table class="dash-table">
+        <thead><tr><th>Date</th><th>Status</th><th>Notes from Teacher</th></tr></thead>
+        <tbody>${attRows}</tbody>
+      </table>
+    </div>
+    <div class="dash-table-wrap">
+      <table class="dash-table">
+        <thead><tr><th>Package</th><th>Amount</th><th>Status</th><th>Due Date</th><th></th></tr></thead>
+        <tbody>${payRows}</tbody>
+      </table>
+    </div>`;
 }
 
 // ── PAYPAL ──

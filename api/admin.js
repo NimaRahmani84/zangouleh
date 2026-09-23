@@ -77,6 +77,19 @@ module.exports = async (req, res) => {
         const { error: updateErr } = await sb.from('profiles').update(updates).eq('id', invited.user.id);
         if (updateErr) throw updateErr;
 
+        // یک enrollment واقعی هم می‌سازیم تا هنرجو توی roster استاد
+        // (که حالا از enrollments می‌خواند، نه profiles.teacher_id) دیده شود
+        if (payload.role === 'student' && payload.teacherId) {
+          const { data: teacherProfile } = await sb.from('profiles').select('full_name').eq('id', payload.teacherId).maybeSingle();
+          await sb.from('enrollments').insert({
+            student_id: invited.user.id,
+            teacher_id: payload.teacherId,
+            teacher_name: teacherProfile?.full_name || null,
+            instrument: payload.instrument || '',
+            enrolled_via: 'school'
+          });
+        }
+
         return res.json({ ok: true });
       }
 
