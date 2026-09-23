@@ -58,6 +58,28 @@ module.exports = async (req, res) => {
         return res.json({ data });
       }
 
+      case 'create_user': {
+        if (!payload.email) return res.status(400).json({ error: 'ایمیل الزامی است' });
+        if (!['student', 'teacher', 'admin'].includes(payload.role)) {
+          return res.status(400).json({ error: 'نقش نامعتبر' });
+        }
+        const { data: invited, error: inviteErr } = await sb.auth.admin.inviteUserByEmail(payload.email, {
+          redirectTo: payload.redirectTo,
+          data: { full_name: payload.fullName || '' }
+        });
+        if (inviteErr) throw inviteErr;
+
+        const updates = { role: payload.role };
+        if (payload.role === 'student') {
+          updates.instrument = payload.instrument || null;
+          updates.teacher_id = payload.teacherId || null;
+        }
+        const { error: updateErr } = await sb.from('profiles').update(updates).eq('id', invited.user.id);
+        if (updateErr) throw updateErr;
+
+        return res.json({ ok: true });
+      }
+
       case 'update_role': {
         if (!['student', 'teacher', 'admin'].includes(payload.role)) {
           return res.status(400).json({ error: 'نقش نامعتبر' });

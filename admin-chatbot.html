@@ -182,6 +182,26 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.25)}
 
     <!-- USERS -->
     <div class="tab-panel" id="tab-users">
+      <button class="btn-add" onclick="openUserForm()">+ افزودن کاربر جدید</button>
+      <div class="kb-form" id="user-form">
+        <div class="form-group"><label class="form-label">نام کامل</label><input type="text" id="user-fullname" class="form-input"></div>
+        <div class="form-group"><label class="form-label">ایمیل</label><input type="email" id="user-email" class="form-input"></div>
+        <div class="form-group">
+          <label class="form-label">نقش</label>
+          <select id="user-role" class="form-input" onchange="toggleUserRoleFields()">
+            <option value="student">دانش‌آموز</option>
+            <option value="teacher">استاد</option>
+            <option value="admin">ادمین</option>
+          </select>
+        </div>
+        <div class="form-group" id="user-instrument-group"><label class="form-label">ساز</label><input type="text" id="user-instrument" class="form-input"></div>
+        <div class="form-group" id="user-teacher-group"><label class="form-label">استاد</label><select id="user-teacher" class="form-input"><option value="">— بدون استاد —</option></select></div>
+        <div class="kb-form-actions">
+          <button class="btn-primary" onclick="saveUser()">ایجاد و ارسال دعوت‌نامه</button>
+          <button class="btn-sm" onclick="closeUserForm()" style="background:#eee">انصراف</button>
+          <span class="msg-fb" id="user-msg"></span>
+        </div>
+      </div>
       <div class="dash-table-wrap">
         <table class="dash-table">
           <thead><tr><th>نام</th><th>ایمیل</th><th>نقش</th><th>ساز</th><th>استاد</th><th>تاریخ عضویت</th><th>حذف</th></tr></thead>
@@ -420,6 +440,48 @@ async function loadUsers() {
         <td><button class="btn-sm btn-del" onclick="deleteUser('${u.id}')">حذف</button></td>
       </tr>`).join('') : '<tr><td colspan="7" class="empty-note">کاربری یافت نشد.</td></tr>';
   } catch (e) { body.innerHTML = `<tr><td colspan="7" class="empty-note">خطا: ${e.message}</td></tr>`; }
+}
+
+function openUserForm() {
+  document.getElementById('user-fullname').value = '';
+  document.getElementById('user-email').value = '';
+  document.getElementById('user-role').value = 'student';
+  document.getElementById('user-instrument').value = '';
+  const teacherSelect = document.getElementById('user-teacher');
+  teacherSelect.innerHTML = '<option value="">— بدون استاد —</option>' +
+    usersCache.filter(u => u.role === 'teacher').map(t => `<option value="${t.id}">${esc(t.full_name || t.email)}</option>`).join('');
+  document.getElementById('user-msg').textContent = '';
+  toggleUserRoleFields();
+  document.getElementById('user-form').classList.add('open');
+}
+function closeUserForm() { document.getElementById('user-form').classList.remove('open'); }
+
+function toggleUserRoleFields() {
+  const isStudent = document.getElementById('user-role').value === 'student';
+  document.getElementById('user-instrument-group').style.display = isStudent ? 'block' : 'none';
+  document.getElementById('user-teacher-group').style.display = isStudent ? 'block' : 'none';
+}
+
+async function saveUser() {
+  const fullName = document.getElementById('user-fullname').value.trim();
+  const email = document.getElementById('user-email').value.trim();
+  const role = document.getElementById('user-role').value;
+  const instrument = document.getElementById('user-instrument').value.trim();
+  const teacherId = document.getElementById('user-teacher').value;
+  const msg = document.getElementById('user-msg');
+  if (!fullName || !email) { msg.textContent = 'نام و ایمیل الزامی است.'; return; }
+  msg.textContent = 'در حال ایجاد…';
+  try {
+    await callApi('create_user', {
+      fullName, email, role,
+      instrument: role === 'student' ? instrument : undefined,
+      teacherId: role === 'student' ? (teacherId || null) : undefined,
+      redirectTo: window.location.origin + '/reset-password.html'
+    });
+    msg.textContent = '✓ دعوت‌نامه ارسال شد';
+    loadUsers();
+    setTimeout(closeUserForm, 900);
+  } catch (e) { msg.textContent = 'خطا: ' + e.message; }
 }
 
 async function updateRole(id, role) {
