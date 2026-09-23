@@ -469,6 +469,9 @@ async function signOut(){
   document.getElementById('portal-signup').style.display='none';
   document.getElementById('portal-forgot').style.display='none';
   document.getElementById('portal-login').style.display='block';
+  document.querySelector('#portal-login form').reset();
+  document.querySelector('#portal-signup form').reset();
+  document.getElementById('login-error').style.display='none';
 }
 
 window.addEventListener('DOMContentLoaded',async()=>{
