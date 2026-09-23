@@ -136,6 +136,7 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.25)}
       <button class="tab-btn active" onclick="showTab('leads')">لیدها</button>
       <button class="tab-btn" onclick="showTab('kb')">پایگاه دانش</button>
       <button class="tab-btn" onclick="showTab('convo')">مکالمات</button>
+      <button class="tab-btn" onclick="showTab('users')">کاربران</button>
     </div>
 
     <!-- LEADS -->
@@ -175,6 +176,16 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.25)}
         <table class="dash-table">
           <thead><tr><th>شناسه</th><th>تعداد پیام</th><th>آخرین پیام</th><th>آخرین فعالیت</th><th></th></tr></thead>
           <tbody id="convo-body"><tr><td colspan="5" class="empty-note">در حال بارگذاری…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="tab-panel" id="tab-users">
+      <div class="dash-table-wrap">
+        <table class="dash-table">
+          <thead><tr><th>نام</th><th>ایمیل</th><th>نقش</th><th>ساز</th><th>استاد</th><th>تاریخ عضویت</th><th>حذف</th></tr></thead>
+          <tbody id="users-body"><tr><td colspan="7" class="empty-note">در حال بارگذاری…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -265,6 +276,7 @@ async function init(session) {
   loadLeads();
   loadKb();
   loadConvos();
+  loadUsers();
 }
 
 function showTab(name) {
@@ -386,6 +398,41 @@ async function viewConvo(id) {
   document.getElementById('convo-modal').classList.add('open');
 }
 function closeConvo() { document.getElementById('convo-modal').classList.remove('open'); }
+
+// ── USERS ──
+let usersCache = [];
+const ROLE_LABEL = { student: 'دانش‌آموز', teacher: 'استاد', admin: 'ادمین' };
+async function loadUsers() {
+  const body = document.getElementById('users-body');
+  try {
+    const { data } = await callApi('list_profiles');
+    usersCache = data;
+    body.innerHTML = data.length ? data.map(u => `
+      <tr>
+        <td>${esc(u.full_name)}</td><td>${esc(u.email)}</td>
+        <td>
+          <select class="form-input" style="padding:.3rem .5rem;font-size:.78rem;width:auto" onchange="updateRole('${u.id}', this.value)">
+            ${Object.entries(ROLE_LABEL).map(([v, label]) => `<option value="${v}" ${u.role === v ? 'selected' : ''}>${label}</option>`).join('')}
+          </select>
+        </td>
+        <td>${esc(u.instrument)}</td><td>${esc(u.teacher_name)}</td>
+        <td>${u.created_at ? new Date(u.created_at).toLocaleDateString('fa-IR') : '–'}</td>
+        <td><button class="btn-sm btn-del" onclick="deleteUser('${u.id}')">حذف</button></td>
+      </tr>`).join('') : '<tr><td colspan="7" class="empty-note">کاربری یافت نشد.</td></tr>';
+  } catch (e) { body.innerHTML = `<tr><td colspan="7" class="empty-note">خطا: ${e.message}</td></tr>`; }
+}
+
+async function updateRole(id, role) {
+  try { await callApi('update_role', { id, role }); }
+  catch (e) { alert('خطا در تغییر نقش: ' + e.message); loadUsers(); }
+}
+
+async function deleteUser(id) {
+  const u = usersCache.find(x => x.id === id);
+  if (!confirm(`اکانت «${u?.email || id}» کاملاً حذف شود؟ این عمل غیرقابل بازگشت است.`)) return;
+  try { await callApi('delete_user', { id }); loadUsers(); }
+  catch (e) { alert('خطا در حذف: ' + e.message); }
+}
 
 function esc(s) { return String(s ?? '–').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function escAttr(s) { return esc(s).replace(/"/g,'&quot;'); }

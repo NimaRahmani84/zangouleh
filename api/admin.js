@@ -52,6 +52,27 @@ module.exports = async (req, res) => {
         return res.json({ ok: true });
       }
 
+      case 'list_profiles': {
+        const { data, error } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        return res.json({ data });
+      }
+
+      case 'update_role': {
+        if (!['student', 'teacher', 'admin'].includes(payload.role)) {
+          return res.status(400).json({ error: 'نقش نامعتبر' });
+        }
+        const { error } = await sb.from('profiles').update({ role: payload.role }).eq('id', payload.id);
+        if (error) throw error;
+        return res.json({ ok: true });
+      }
+
+      case 'delete_user': {
+        const { error } = await sb.auth.admin.deleteUser(payload.id);
+        if (error) throw error;
+        return res.json({ ok: true });
+      }
+
       case 'list_kb': {
         const { data, error } = await sb.from('knowledge_base').select('id, title, content, created_at').order('id', { ascending: true });
         if (error) throw error;
