@@ -133,10 +133,11 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.25)}
     </div>
 
     <div class="tabs">
-      <button class="tab-btn active" onclick="showTab('leads')">لیدها</button>
-      <button class="tab-btn" onclick="showTab('kb')">پایگاه دانش</button>
-      <button class="tab-btn" onclick="showTab('convo')">مکالمات</button>
-      <button class="tab-btn" onclick="showTab('users')">کاربران</button>
+      <button class="tab-btn active" data-tab="leads" onclick="showTab('leads')">لیدها</button>
+      <button class="tab-btn" data-tab="kb" onclick="showTab('kb')">پایگاه دانش</button>
+      <button class="tab-btn" data-tab="convo" onclick="showTab('convo')">مکالمات</button>
+      <button class="tab-btn" data-tab="users" onclick="showTab('users')">کاربران</button>
+      <button class="tab-btn" data-tab="registrations" onclick="showTab('registrations')">ثبت‌نام‌ها</button>
     </div>
 
     <!-- LEADS -->
@@ -206,6 +207,21 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.25)}
         <table class="dash-table">
           <thead><tr><th>نام</th><th>ایمیل</th><th>نقش</th><th>ساز</th><th>استاد</th><th>تاریخ عضویت</th><th>حذف</th></tr></thead>
           <tbody id="users-body"><tr><td colspan="7" class="empty-note">در حال بارگذاری…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- REGISTRATIONS -->
+    <div class="tab-panel" id="tab-registrations">
+      <div class="dash-table-wrap">
+        <table class="dash-table">
+          <thead><tr>
+            <th>نام</th><th>نام خانوادگی</th><th>تلفن</th><th>ایمیل</th><th>ساز/برنامه</th><th>استاد ترجیحی</th>
+            <th>پکیج</th><th>قیمت</th><th>زمان کلاس</th><th>نوع کلاس</th><th>سن</th><th>مدت</th><th>تعداد جلسات</th>
+            <th>معرف</th><th>تاریخ تولد</th><th>آلرژی/سلامت</th><th>روش پرداخت</th><th>یادداشت</th>
+            <th>رضایت ضبط</th><th>رضایت دوربین</th><th>پذیرش قوانین</th><th>تاریخ ثبت</th><th>عملیات</th>
+          </tr></thead>
+          <tbody id="registrations-body"><tr><td colspan="23" class="empty-note">در حال بارگذاری…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -297,12 +313,13 @@ async function init(session) {
   loadKb();
   loadConvos();
   loadUsers();
+  loadRegistrations();
 }
 
 function showTab(name) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  event.target.classList.add('active');
+  document.querySelector('.tab-btn[data-tab="' + name + '"]').classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
 }
 
@@ -494,6 +511,56 @@ async function deleteUser(id) {
   if (!confirm(`اکانت «${u?.email || id}» کاملاً حذف شود؟ این عمل غیرقابل بازگشت است.`)) return;
   try { await callApi('delete_user', { id }); loadUsers(); }
   catch (e) { alert('خطا در حذف: ' + e.message); }
+}
+
+// ── REGISTRATIONS ──
+let registrationsCache = [];
+async function loadRegistrations() {
+  const body = document.getElementById('registrations-body');
+  try {
+    const [{ data }] = await Promise.all([callApi('list_messages', { formType: 'enrollment' }), loadUsers()]);
+    registrationsCache = data || [];
+    renderRegistrations();
+  } catch (e) { body.innerHTML = `<tr><td colspan="23" class="empty-note">خطا: ${e.message}</td></tr>`; }
+}
+
+function renderRegistrations() {
+  const body = document.getElementById('registrations-body');
+  body.innerHTML = registrationsCache.length ? registrationsCache.map(m => {
+    const d = m.data || {};
+    const alreadyIn = usersCache.some(u => (u.email || '').toLowerCase() === (d.email || '').toLowerCase());
+    const action = alreadyIn
+      ? '<span style="color:var(--ink-soft);font-size:.78rem">✓ در سیستم موجود است</span>'
+      : `<button class="btn-sm btn-view" onclick="addToSystem(${m.id})">افزودن به سیستم</button>`;
+    return `<tr>
+      <td>${esc(d.firstName)}</td><td>${esc(d.lastName)}</td><td>${esc(d.phone)}</td><td>${esc(d.email)}</td>
+      <td>${esc(d.instrument)}</td><td>${esc(d.instructor)}</td>
+      <td>${esc(d.package)}</td><td>${d.price ? '$' + esc(d.price) : '–'}</td>
+      <td>${esc(d.classTime)}</td><td>${esc(d.classType)}</td><td>${esc(d.age)}</td><td>${esc(d.duration)}</td><td>${esc(d.sessionCount)}</td>
+      <td>${esc(d.reference)}</td><td>${esc(d.birthDate)}</td><td class="cell-trunc" title="${escAttr(d.allergyInfo)}">${esc(d.allergyInfo)}</td>
+      <td>${esc(d.paymentMethod)}</td><td class="cell-trunc" title="${escAttr(d.notes)}">${esc(d.notes)}</td>
+      <td>${esc(d.recordingConsent)}</td><td>${esc(d.cameraConsent)}</td><td>${esc(d.policiesAgreed)}</td>
+      <td>${m.created_at ? new Date(m.created_at).toLocaleDateString('fa-IR') : '–'}</td>
+      <td style="white-space:nowrap">${action} <button class="btn-sm btn-del" onclick="deleteRegistration(${m.id})">حذف</button></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="23" class="empty-note">هنوز ثبت‌نامی نیامده.</td></tr>';
+}
+
+function addToSystem(id) {
+  const m = registrationsCache.find(x => x.id === id);
+  if (!m) return;
+  const d = m.data || {};
+  openUserForm();
+  document.getElementById('user-fullname').value = `${d.firstName || ''} ${d.lastName || ''}`.trim();
+  document.getElementById('user-email').value = d.email || '';
+  document.getElementById('user-instrument').value = d.instrument || '';
+  showTab('users');
+}
+
+async function deleteRegistration(id) {
+  if (!confirm('این ثبت‌نام حذف شود؟')) return;
+  await callApi('delete_message', { id });
+  loadRegistrations();
 }
 
 function esc(s) { return String(s ?? '–').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }

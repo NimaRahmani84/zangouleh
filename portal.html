@@ -274,6 +274,21 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
           </table>
         </div>
 
+        <div class="dash-section-title">Message a Student</div>
+        <p style="font-size:.78rem;color:var(--ink-soft);margin-top:-.5rem;margin-bottom:.75rem">One-way — the student will see this in their portal, but can't reply from there.</p>
+        <div class="dash-form">
+          <div class="dash-form-row">
+            <div><label>Student</label><select id="msg-student"><option value="">— pick a student —</option></select></div>
+          </div>
+          <div class="dash-form-row">
+            <div style="grid-column:1/-1"><label>Message</label><textarea id="msg-text" class="form-input" rows="3" style="width:100%;resize:vertical"></textarea></div>
+          </div>
+          <div class="dash-form-actions">
+            <button class="btn-dash btn-dash-primary" onclick="sendTeacherMessage()">Send Message</button>
+            <span id="msg-msg" style="font-size:.8rem;color:var(--burgundy)"></span>
+          </div>
+        </div>
+
         <div class="dash-section-title">Monthly Attendance Grid</div>
         <p style="font-size:.78rem;color:var(--ink-soft);margin-top:-.5rem;margin-bottom:.75rem">Click a day cell to cycle: blank → Present → Excused → Unexcused → blank. Saves instantly.</p>
         <div class="dash-form">
@@ -301,8 +316,39 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
         <div><h2>My Portal &nbsp;<span class="role-badge role-student">Student</span></h2><p id="student-email-display"></p></div>
         <button class="dash-signout" onclick="signOut()">Sign Out</button>
       </div>
-      <div class="dash-body" id="student-enrollments-body">
-        <p style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</p>
+      <div class="dash-body">
+        <div class="dash-section-title">My Profile</div>
+        <div class="dash-form">
+          <div class="dash-form-row">
+            <div><label>Full Name</label><input type="text" id="profile-fullname"></div>
+          </div>
+          <div class="dash-form-actions">
+            <button class="btn-dash btn-dash-primary" onclick="saveProfileName()">Save Name</button>
+            <span id="profile-name-msg" style="font-size:.8rem;color:var(--burgundy)"></span>
+          </div>
+        </div>
+        <div class="dash-form">
+          <div class="dash-form-row">
+            <div><label>New Password</label><input type="password" id="profile-password" placeholder="At least 6 characters"></div>
+            <div><label>Confirm Password</label><input type="password" id="profile-password2"></div>
+          </div>
+          <div class="dash-form-actions">
+            <button class="btn-dash btn-dash-primary" onclick="saveProfilePassword()">Change Password</button>
+            <span id="profile-password-msg" style="font-size:.8rem;color:var(--burgundy)"></span>
+          </div>
+        </div>
+
+        <div class="dash-section-title">Messages from Your Teacher</div>
+        <div class="dash-table-wrap">
+          <table class="dash-table">
+            <thead><tr><th>Teacher</th><th>Message</th><th>Date</th></tr></thead>
+            <tbody id="student-messages-body"><tr><td colspan="3" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
+          </table>
+        </div>
+
+        <div id="student-enrollments-body">
+          <p style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</p>
+        </div>
       </div>
     </div>
 
@@ -512,7 +558,7 @@ async function loadDashboard(user){
   } else {
     document.getElementById('dash-student').style.display='block';
     document.getElementById('student-email-display').textContent=user.email;
-    loadStudentData(user);
+    loadStudentData(user,profile);
   }
 }
 
@@ -654,8 +700,37 @@ async function loadPayroll(){
 }
 
 // ── TEACHER ──
+let teacherEnrollmentsCache=[];
+let teacherStudentProfileCache=new Map();
+
+function populateMessageStudentPicker(){
+  const select=document.getElementById('msg-student');
+  if(!select)return;
+  const seen=new Set();
+  let options='<option value="">— pick a student —</option>';
+  teacherEnrollmentsCache.forEach(e=>{
+    if(seen.has(e.student_id))return;
+    seen.add(e.student_id);
+    const s=teacherStudentProfileCache.get(e.student_id);
+    options+=`<option value="${e.student_id}">${esc(s?.full_name||s?.email)}</option>`;
+  });
+  select.innerHTML=options;
+}
+
+async function sendTeacherMessage(){
+  const {data:{session}}=await sb.auth.getSession();
+  const studentId=document.getElementById('msg-student').value;
+  const message=document.getElementById('msg-text').value.trim();
+  const msg=document.getElementById('msg-msg');
+  if(!studentId||!message){msg.textContent='Pick a student and write a message.';return;}
+  const {error}=await sb.from('teacher_messages').insert({teacher_id:session.user.id,student_id:studentId,message});
+  if(error){msg.textContent='Error: '+error.message;}
+  else{msg.textContent='✓ Sent';document.getElementById('msg-text').value='';setTimeout(()=>{msg.textContent='';},3000);}
+}
+
 async function loadTeacherData(user){
   const {data:enrollments}=await sb.from('enrollments').select('*').eq('teacher_id',user.id);
+  teacherEnrollmentsCache=enrollments||[];
   const now=new Date();
   const {data:sessions}=await sb.from('attendance').select('*').eq('teacher_id',user.id)
     .gte('date',`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`);
@@ -665,10 +740,12 @@ async function loadTeacherData(user){
   document.getElementById('grid-month').value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 
   const tbody=document.getElementById('teacher-students-body');
-  if(!enrollments?.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">No students assigned yet.</td></tr>';return;}
+  if(!enrollments?.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">No students assigned yet.</td></tr>';populateMessageStudentPicker();return;}
   const studentIds=[...new Set(enrollments.map(e=>e.student_id))];
   const {data:studentProfiles}=await sb.from('profiles').select('*').in('id',studentIds);
   const profileById=new Map((studentProfiles||[]).map(p=>[p.id,p]));
+  teacherStudentProfileCache=profileById;
+  populateMessageStudentPicker();
   const enrollmentIds=enrollments.map(e=>e.id);
   const {data:allAtt}=await sb.from('attendance').select('*').in('enrollment_id',enrollmentIds);
   const {data:allPay}=await sb.from('payments').select('*').in('enrollment_id',enrollmentIds);
@@ -832,12 +909,45 @@ async function toggleAttendanceCell(btn,enrollmentId,studentId,dateStr){
   loadAttendanceGrid();
 }
 
+// ── PROFILE ──
+async function saveProfileName(){
+  const fullName=document.getElementById('profile-fullname').value.trim();
+  const msg=document.getElementById('profile-name-msg');
+  if(!fullName){msg.textContent='Name is required.';return;}
+  const {data:{session}}=await sb.auth.getSession();
+  const {error}=await sb.from('profiles').update({full_name:fullName}).eq('id',session.user.id);
+  msg.textContent=error?('Error: '+error.message):'✓ Saved';
+  if(!error)setTimeout(()=>{msg.textContent='';},3000);
+}
+
+async function saveProfilePassword(){
+  const p1=document.getElementById('profile-password').value;
+  const p2=document.getElementById('profile-password2').value;
+  const msg=document.getElementById('profile-password-msg');
+  if(!p1||p1.length<6){msg.textContent='Password must be at least 6 characters.';return;}
+  if(p1!==p2){msg.textContent='Passwords do not match.';return;}
+  const {error}=await sb.auth.updateUser({password:p1});
+  if(error){msg.textContent='Error: '+error.message;return;}
+  msg.textContent='✓ Password updated';
+  document.getElementById('profile-password').value='';
+  document.getElementById('profile-password2').value='';
+  setTimeout(()=>{msg.textContent='';},3000);
+}
+
 // ── STUDENT ──
 // A student can now have more than one enrollment (different teachers
 // and/or instruments), so the dashboard renders one self-contained block
 // per enrollment — sessions-left/attendance/payments must never blend
 // across two different teachers' packages.
-async function loadStudentData(user){
+async function loadStudentData(user,profile){
+  document.getElementById('profile-fullname').value=profile?.full_name||'';
+
+  const msgBody=document.getElementById('student-messages-body');
+  const {data:messages}=await sb.from('teacher_messages').select('*').eq('student_id',user.id).order('created_at',{ascending:false});
+  msgBody.innerHTML=messages?.length
+    ?messages.map(m=>`<tr><td>${esc(m.teacher_name)}</td><td>${esc(m.message)}</td><td>${m.created_at?new Date(m.created_at).toLocaleDateString():'–'}</td></tr>`).join('')
+    :'<tr><td colspan="3" style="text-align:center;color:var(--ink-soft);padding:2rem">No messages yet.</td></tr>';
+
   const container=document.getElementById('student-enrollments-body');
   const [{data:enrollments},{data:att},{data:payments}]=await Promise.all([
     sb.from('enrollments').select('*').eq('student_id',user.id),
@@ -957,7 +1067,9 @@ async function openPaypalModal(paymentId,amount){
         return;
       }
       closePaypalModal();
-      loadStudentData((await sb.auth.getSession()).data.session.user);
+      const {data:{session:refreshedSession}}=await sb.auth.getSession();
+      const {data:refreshedProfile}=await sb.from('profiles').select('*').eq('id',refreshedSession.user.id).single();
+      loadStudentData(refreshedSession.user,refreshedProfile);
     },
     onError: (err)=>{
       document.getElementById('paypal-error').textContent='Payment error: '+err.message;
