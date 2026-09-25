@@ -84,7 +84,11 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
   <div id="portal-login" style="display:none" class="page-content">
     <div id="portal-login-inner">
       <p style="font-size:.8rem;color:var(--ink-soft);text-align:center;margin-bottom:.5rem">Members Area · پورتال اعضا</p>
-      <h2 style="font-family:var(--font-display);font-size:1.8rem;color:var(--burgundy);font-style:italic;text-align:center;margin-bottom:.3rem">Sign In</h2>
+      <div style="display:flex;gap:.5rem;margin-bottom:1.5rem">
+        <button type="button" id="audience-student-btn" class="btn-primary" style="flex:1;padding:.7rem .5rem;font-size:.68rem;letter-spacing:.08em" onclick="setLoginAudience('student')">Sign In — Students</button>
+        <button type="button" id="audience-staff-btn" class="btn-secondary" style="flex:1;padding:.68rem .5rem;font-size:.68rem;letter-spacing:.08em" onclick="setLoginAudience('staff')">Sign In — Instructors &amp; Admin</button>
+      </div>
+      <h2 id="login-heading" style="font-family:var(--font-display);font-size:1.8rem;color:var(--burgundy);font-style:italic;text-align:center;margin-bottom:.3rem">Sign In — Students</h2>
       <p style="text-align:center;font-size:.82rem;color:var(--ink-soft);margin-bottom:2rem">Enter your email and password to access your portal.</p>
       <div class="login-error" id="login-error"></div>
       <form onsubmit="handleLogin(event)" autocomplete="off">
@@ -93,7 +97,7 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
         <button type="submit" class="btn-primary" style="width:100%;margin-top:.5rem" id="login-btn">Sign In</button>
       </form>
       <p style="text-align:center;font-size:.78rem;margin-top:1rem"><a href="#" onclick="showForgot(event)" style="color:var(--ink-soft)">Forgot password?</a></p>
-      <p style="text-align:center;font-size:.78rem;color:var(--ink-soft);margin-top:.5rem">New student? <a href="#" onclick="showSignup(event)" style="color:var(--burgundy)">Create an account</a></p>
+      <p style="text-align:center;font-size:.78rem;color:var(--ink-soft);margin-top:.5rem" id="signup-link-row">New student? <a href="#" onclick="showSignup(event)" style="color:var(--burgundy)">Create an account</a></p>
     </div>
   </div>
 
@@ -445,6 +449,16 @@ function currentPackageFor(payments){
   return pkgs.sort((a,b)=>new Date(b.start_date||b.created_at)-new Date(a.start_date||a.created_at))[0];
 }
 
+let loginAudience='student';
+function setLoginAudience(a){
+  loginAudience=a;
+  document.getElementById('audience-student-btn').className=a==='student'?'btn-primary':'btn-secondary';
+  document.getElementById('audience-staff-btn').className=a==='staff'?'btn-primary':'btn-secondary';
+  document.getElementById('login-heading').textContent=a==='student'?'Sign In — Students':'Sign In — Instructors & Admin';
+  document.getElementById('signup-link-row').style.display=a==='student'?'block':'none';
+  document.getElementById('login-error').style.display='none';
+}
+
 async function handleLogin(e){
   e.preventDefault();
   const btn=document.getElementById('login-btn');
@@ -455,6 +469,17 @@ async function handleLogin(e){
     password:document.getElementById('login-password').value
   });
   if(error){err.textContent=error.message;err.style.display='block';btn.textContent='Sign In';btn.disabled=false;return;}
+
+  const {data:profile}=await sb.from('profiles').select('role').eq('id',data.user.id).maybeSingle();
+  const role=profile?.role||'student';
+  const isStaff=role==='teacher'||role==='admin';
+  if((loginAudience==='student'&&isStaff)||(loginAudience==='staff'&&!isStaff)){
+    await sb.auth.signOut();
+    err.textContent=loginAudience==='student'
+      ?'This account belongs to an instructor/admin — use "Sign In — Instructors & Admin" above.'
+      :'This account belongs to a student — use "Sign In — Students" above.';
+    err.style.display='block';btn.textContent='Sign In';btn.disabled=false;return;
+  }
   loadDashboard(data.user);
 }
 
@@ -530,6 +555,7 @@ async function signOut(){
   document.querySelector('#portal-login form').reset();
   document.querySelector('#portal-signup form').reset();
   document.getElementById('login-error').style.display='none';
+  setLoginAudience('student');
 }
 
 window.addEventListener('DOMContentLoaded',async()=>{
