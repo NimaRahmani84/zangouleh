@@ -145,6 +145,10 @@ let accessToken = null;
 let currentFilter = '';
 let messagesCache = [];
 
+// Always show Gregorian dates on Canada (Toronto) time, regardless of the
+// viewing device's own locale/timezone settings.
+function fmtDateTime(iso) { return iso ? new Date(iso).toLocaleString('en-CA', { timeZone: 'America/Toronto' }) : '–'; }
+
 async function callApi(action, payload = {}) {
   const res = await fetch(API, {
     method: 'POST',
@@ -250,7 +254,7 @@ function renderMessages() {
     const email = d.email || '–';
     const phone = d.phone || '–';
     return `<tr>
-      <td>${m.created_at ? new Date(m.created_at).toLocaleString() : '–'}</td>
+      <td>${fmtDateTime(m.created_at)}</td>
       <td><span class="type-badge type-${m.form_type}">${m.form_type}</span></td>
       <td>${esc(name)}</td>
       <td class="cell-trunc">${esc(email)}</td>
@@ -268,7 +272,7 @@ function viewDetail(id) {
   const rows = Object.entries(d).map(([k,v]) => `<div class="detail-row"><div class="detail-key">${esc(k)}</div><div class="detail-val">${esc(v)}</div></div>`).join('');
   document.getElementById('detail-body-content').innerHTML =
     `<div class="detail-row"><div class="detail-key">Type</div><div class="detail-val">${esc(m.form_type)}</div></div>
-     <div class="detail-row"><div class="detail-key">Received</div><div class="detail-val">${new Date(m.created_at).toLocaleString()}</div></div>
+     <div class="detail-row"><div class="detail-key">Received</div><div class="detail-val">${fmtDateTime(m.created_at)}</div></div>
      ${rows}`;
   document.getElementById('detail-modal').classList.add('open');
 }

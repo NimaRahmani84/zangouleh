@@ -239,6 +239,12 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.25)}
 const API = '/api/admin';
 let accessToken = null;
 
+// همه‌ی تاریخ/ساعت‌ها همیشه میلادی و بر اساس ساعت کانادا (تورنتو) نشون داده
+// بشه، صرف‌نظر از این‌که سیستم‌عامل/مرورگر کاربر روی چه زبان یا منطقه‌ی
+// زمانی تنظیم شده (وگرنه locale فارسی مرورگر می‌تونه تاریخ‌ها رو شمسی نشون بده)
+function fmtDate(iso) { return iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/Toronto' }) : '–'; }
+function fmtDateTime(iso) { return iso ? new Date(iso).toLocaleString('en-CA', { timeZone: 'America/Toronto' }) : '–'; }
+
 async function callApi(action, payload = {}) {
   const res = await fetch(API, {
     method: 'POST',
@@ -341,7 +347,7 @@ async function loadLeads() {
       <tr>
         <td>${esc(l.name)}</td><td>${esc(l.phone)}</td><td>${esc(l.email)}</td>
         <td>${esc(l.instrument)}</td><td>${esc(l.source)}</td><td>${esc(l.notes)}</td>
-        <td>${l.created_at ? new Date(l.created_at).toLocaleDateString('fa-IR') : '–'}</td>
+        <td>${fmtDate(l.created_at)}</td>
         <td><button class="btn-sm btn-del" onclick="deleteLead(${l.id})">حذف</button></td>
       </tr>`).join('') : '<tr><td colspan="8" class="empty-note">هنوز لیدی ثبت نشده.</td></tr>';
   } catch (e) { body.innerHTML = `<tr><td colspan="8" class="empty-note">خطا: ${e.message}</td></tr>`; }
@@ -421,7 +427,7 @@ async function loadConvos() {
       <tr>
         <td>${esc(s.id)}</td><td>${s.message_count}</td>
         <td class="cell-trunc" title="${escAttr(s.last_message)}">${esc(s.last_message)}</td>
-        <td>${s.updated_at ? new Date(s.updated_at).toLocaleString('fa-IR') : '–'}</td>
+        <td>${fmtDateTime(s.updated_at)}</td>
         <td><button class="btn-sm btn-view" onclick="viewConvo('${s.id}')">مشاهده</button></td>
       </tr>`).join('') : '<tr><td colspan="5" class="empty-note">هنوز مکالمه‌ای ثبت نشده.</td></tr>';
   } catch (e) { body.innerHTML = `<tr><td colspan="5" class="empty-note">خطا: ${e.message}</td></tr>`; }
@@ -501,7 +507,7 @@ function renderUsers() {
         </td>`;
       }
       if (isFirst) {
-        tds += `<td${span}>${u.created_at ? new Date(u.created_at).toLocaleDateString('fa-IR') : '–'}</td>`;
+        tds += `<td${span}>${fmtDate(u.created_at)}</td>`;
         tds += `<td${span}><button class="btn-sm btn-del" onclick="deleteUser('${u.id}')">حذف</button></td>`;
       }
       rows.push(`<tr>${tds}</tr>`);
@@ -618,7 +624,7 @@ function renderRegistrations() {
       <td>${esc(d.reference)}</td><td>${esc(d.birthDate)}</td><td class="cell-trunc" title="${escAttr(d.allergyInfo)}">${esc(d.allergyInfo)}</td>
       <td>${esc(d.paymentMethod)}</td><td class="cell-trunc" title="${escAttr(d.notes)}">${esc(d.notes)}</td>
       <td>${esc(d.recordingConsent)}</td><td>${esc(d.cameraConsent)}</td><td>${esc(d.policiesAgreed)}</td>
-      <td>${m.created_at ? new Date(m.created_at).toLocaleDateString('fa-IR') : '–'}</td>
+      <td>${fmtDate(m.created_at)}</td>
       <td style="white-space:nowrap">${action} <button class="btn-sm btn-del" onclick="deleteRegistration(${m.id})">حذف</button></td>
     </tr>`;
   }).join('') : '<tr><td colspan="22" class="empty-note">هنوز ثبت‌نامی نیامده.</td></tr>';

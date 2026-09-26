@@ -110,7 +110,7 @@ function saveHistory() {
 }
 
 function now() {
-  return new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+  return new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Toronto' });
 }
 
 function appendMsg(text, who, animate = true) {

@@ -386,6 +386,10 @@ function toggleNav(){document.getElementById('navLinks').classList.toggle('open'
 let currentUserId=null;
 function esc(s){return String(s??'–').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
+// Always Gregorian dates on Canada (Toronto) time, regardless of the
+// viewing device's own locale/timezone settings.
+function fmtDate(iso){return iso?new Date(iso).toLocaleDateString('en-CA',{timeZone:'America/Toronto'}):'–';}
+
 // Shared: given a student-email field, look up that student's enrollments
 // (optionally restricted to one teacher) and populate a <select> with them.
 // Used by every "record a payment / attendance for this student" form, since
@@ -626,7 +630,7 @@ async function loadAdminData(){
       rows.push(`<tr>
         <td>${esc(s.full_name)}</td><td>${esc(s.email)}</td><td>–</td><td>–</td>
         <td style="color:var(--ink-soft)">Not enrolled yet</td>
-        <td>${s.created_at?new Date(s.created_at).toLocaleDateString():'–'}</td>
+        <td>${fmtDate(s.created_at)}</td>
       </tr>`);
       return;
     }
@@ -640,7 +644,7 @@ async function loadAdminData(){
             <option value="instructor" ${e.enrolled_via==='instructor'?'selected':''}>Instructor (70/30)</option>
           </select>
         </td>
-        <td>${s.created_at?new Date(s.created_at).toLocaleDateString():'–'}</td>
+        <td>${fmtDate(s.created_at)}</td>
       </tr>`);
     });
   });
@@ -757,13 +761,17 @@ async function sendTeacherMessage(){
 async function loadTeacherData(user){
   const {data:enrollments}=await sb.from('enrollments').select('*').eq('teacher_id',user.id);
   teacherEnrollmentsCache=enrollments||[];
-  const now=new Date();
+  // "Today" per Canada (Toronto) time, not the device's own timezone/UTC —
+  // near midnight, toISOString()/local getters could otherwise land on the
+  // wrong calendar day.
+  const todayInToronto=fmtDate(new Date());
+  const [torontoY,torontoM]=todayInToronto.split('-');
   const {data:sessions}=await sb.from('attendance').select('*').eq('teacher_id',user.id)
-    .gte('date',`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`);
+    .gte('date',`${torontoY}-${torontoM}-01`);
   document.getElementById('t-stat-students').textContent=enrollments?.length??0;
   document.getElementById('t-stat-sessions').textContent=sessions?.length??0;
-  document.getElementById('att-date').value=now.toISOString().split('T')[0];
-  document.getElementById('grid-month').value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('att-date').value=todayInToronto;
+  document.getElementById('grid-month').value=`${torontoY}-${torontoM}`;
 
   const tbody=document.getElementById('teacher-students-body');
   if(!enrollments?.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:2rem">No students assigned yet.</td></tr>';populateMessageStudentPicker();return;}
@@ -971,7 +979,7 @@ async function loadStudentData(user,profile){
   const msgBody=document.getElementById('student-messages-body');
   const {data:messages}=await sb.from('teacher_messages').select('*').eq('student_id',user.id).order('created_at',{ascending:false});
   msgBody.innerHTML=messages?.length
-    ?messages.map(m=>`<tr><td>${esc(m.teacher_name)}</td><td>${esc(m.message)}</td><td>${m.created_at?new Date(m.created_at).toLocaleDateString():'–'}</td></tr>`).join('')
+    ?messages.map(m=>`<tr><td>${esc(m.teacher_name)}</td><td>${esc(m.message)}</td><td>${fmtDate(m.created_at)}</td></tr>`).join('')
     :'<tr><td colspan="3" style="text-align:center;color:var(--ink-soft);padding:2rem">No messages yet.</td></tr>';
 
   const container=document.getElementById('student-enrollments-body');
