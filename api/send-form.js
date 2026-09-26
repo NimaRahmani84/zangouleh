@@ -39,7 +39,8 @@ module.exports = async (req, res) => {
     subject = `[Consultation Request] ${d.firstName} ${d.lastName}`;
     rows = [
       ['Name', `${d.firstName} ${d.lastName}`],
-      ['Phone / WhatsApp', d.phone],
+      ['Phone', d.phone],
+      ['WhatsApp', d.whatsapp || 'Same as phone'],
       ['Email', d.email || '—'],
       ['Instrument / Program', d.instrument || '—'],
       ['Student Age', d.age || '—'],

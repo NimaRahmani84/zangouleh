@@ -180,7 +180,10 @@
                 <div class="form-group"><label class="form-label">First Name *</label><input name="firstName" type="text" class="form-input" placeholder="First name" required></div>
                 <div class="form-group"><label class="form-label">Last Name *</label><input name="lastName" type="text" class="form-input" placeholder="Last name" required></div>
               </div>
-              <div class="form-group"><label class="form-label">Phone / WhatsApp *</label><input name="phone" type="tel" class="form-input" placeholder="+1 (647) ..." required></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Phone *</label><input name="phone" type="tel" class="form-input" placeholder="+1 (647) ..." required></div>
+                <div class="form-group"><label class="form-label">WhatsApp (if different from phone)</label><input name="whatsapp" type="tel" class="form-input" placeholder="Leave blank if same as phone"></div>
+              </div>
               <div class="form-group"><label class="form-label">Email Address</label><input name="email" type="email" class="form-input" placeholder="your@email.com"></div>
               <div class="form-group">
                 <label class="form-label">Instrument / Program of Interest</label>
@@ -466,7 +469,7 @@ async function handleConsult(e){
   var btn=e.target.querySelector('button[type="submit"]');
   var orig=btn.textContent; btn.disabled=true; btn.textContent='Sending…';
   var fd=new FormData(e.target);
-  var data={formType:'consultation',firstName:fd.get('firstName'),lastName:fd.get('lastName'),phone:fd.get('phone'),email:fd.get('email'),instrument:fd.get('instrument'),age:fd.get('age'),contactMethod:fd.get('contactMethod'),message:fd.get('message')};
+  var data={formType:'consultation',firstName:fd.get('firstName'),lastName:fd.get('lastName'),phone:fd.get('phone'),whatsapp:fd.get('whatsapp'),email:fd.get('email'),instrument:fd.get('instrument'),age:fd.get('age'),contactMethod:fd.get('contactMethod'),message:fd.get('message')};
   try{
     var r=await fetch('/api/send-form',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
     if(!r.ok) throw 0;
