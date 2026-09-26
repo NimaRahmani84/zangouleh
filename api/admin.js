@@ -58,6 +58,55 @@ module.exports = async (req, res) => {
         return res.json({ data });
       }
 
+      case 'list_enrollments': {
+        const { data, error } = await sb.from('enrollments').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        return res.json({ data });
+      }
+
+      case 'create_enrollment': {
+        if (!payload.studentId || !payload.instrument) {
+          return res.status(400).json({ error: 'هنرجو و ساز الزامی است' });
+        }
+        let teacherName = null;
+        if (payload.teacherId) {
+          const { data: t } = await sb.from('profiles').select('full_name').eq('id', payload.teacherId).maybeSingle();
+          teacherName = t?.full_name || null;
+        }
+        const { error } = await sb.from('enrollments').insert({
+          student_id: payload.studentId,
+          teacher_id: payload.teacherId || null,
+          teacher_name: teacherName,
+          instrument: payload.instrument,
+          enrolled_via: 'school'
+        });
+        if (error) throw error;
+        return res.json({ ok: true });
+      }
+
+      case 'update_enrollment': {
+        const updates = {};
+        if (payload.instrument !== undefined) updates.instrument = payload.instrument;
+        if (payload.teacherId !== undefined) {
+          updates.teacher_id = payload.teacherId || null;
+          if (payload.teacherId) {
+            const { data: t } = await sb.from('profiles').select('full_name').eq('id', payload.teacherId).maybeSingle();
+            updates.teacher_name = t?.full_name || null;
+          } else {
+            updates.teacher_name = null;
+          }
+        }
+        const { error } = await sb.from('enrollments').update(updates).eq('id', payload.id);
+        if (error) throw error;
+        return res.json({ ok: true });
+      }
+
+      case 'delete_enrollment': {
+        const { error } = await sb.from('enrollments').delete().eq('id', payload.id);
+        if (error) throw error;
+        return res.json({ ok: true });
+      }
+
       case 'create_user': {
         if (!payload.email) return res.status(400).json({ error: 'ایمیل الزامی است' });
         if (!['student', 'teacher', 'admin'].includes(payload.role)) {

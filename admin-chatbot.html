@@ -438,25 +438,103 @@ function closeConvo() { document.getElementById('convo-modal').classList.remove(
 
 // ── USERS ──
 let usersCache = [];
+let enrollmentsCache = [];
 const ROLE_LABEL = { student: 'دانش‌آموز', teacher: 'استاد', admin: 'ادمین' };
+
 async function loadUsers() {
   const body = document.getElementById('users-body');
   try {
-    const { data } = await callApi('list_profiles');
-    usersCache = data;
-    body.innerHTML = data.length ? data.map(u => `
-      <tr>
-        <td>${esc(u.full_name)}</td><td>${esc(u.email)}</td>
-        <td>
+    const [{ data: profiles }, { data: enrollments }] = await Promise.all([
+      callApi('list_profiles'),
+      callApi('list_enrollments')
+    ]);
+    usersCache = profiles || [];
+    enrollmentsCache = enrollments || [];
+    renderUsers();
+  } catch (e) { body.innerHTML = `<tr><td colspan="7" class="empty-note">خطا: ${e.message}</td></tr>`; }
+}
+
+function teacherOptionsHtml(selectedId) {
+  const teachers = usersCache.filter(u => u.role === 'teacher');
+  return '<option value="">— بدون استاد —</option>' +
+    teachers.map(t => `<option value="${t.id}" ${t.id === selectedId ? 'selected' : ''}>${esc(t.full_name || t.email)}</option>`).join('');
+}
+
+function renderUsers() {
+  const body = document.getElementById('users-body');
+  if (!usersCache.length) { body.innerHTML = '<tr><td colspan="7" class="empty-note">کاربری یافت نشد.</td></tr>'; return; }
+
+  const rows = [];
+  usersCache.forEach(u => {
+    const isStudent = u.role === 'student';
+    // برای هنرجو: یک ردیف به‌ازای هر enrollment موجود، به‌اضافه یک ردیف
+    // خالی همیشگی برای اضافه‌کردن ساز/استاد جدید. برای استاد/ادمین: فقط
+    // یک ردیف ثابت (ساز/استاد اصلاً معنی نداره).
+    const myEnrollments = isStudent ? enrollmentsCache.filter(e => e.student_id === u.id) : [];
+    const slots = isStudent ? [...myEnrollments, null] : [null];
+
+    slots.forEach((e, i) => {
+      const isFirst = i === 0;
+      const span = slots.length > 1 ? ` rowspan="${slots.length}"` : '';
+      let tds = '';
+      if (isFirst) {
+        tds += `<td${span}>${esc(u.full_name)}</td><td${span}>${esc(u.email)}</td>`;
+        tds += `<td${span}>
           <select class="form-input" style="padding:.3rem .5rem;font-size:.78rem;width:auto" onchange="updateRole('${u.id}', this.value)">
             ${Object.entries(ROLE_LABEL).map(([v, label]) => `<option value="${v}" ${u.role === v ? 'selected' : ''}>${label}</option>`).join('')}
           </select>
-        </td>
-        <td>${esc(u.instrument)}</td><td>${esc(u.teacher_name)}</td>
-        <td>${u.created_at ? new Date(u.created_at).toLocaleDateString('fa-IR') : '–'}</td>
-        <td><button class="btn-sm btn-del" onclick="deleteUser('${u.id}')">حذف</button></td>
-      </tr>`).join('') : '<tr><td colspan="7" class="empty-note">کاربری یافت نشد.</td></tr>';
-  } catch (e) { body.innerHTML = `<tr><td colspan="7" class="empty-note">خطا: ${e.message}</td></tr>`; }
+        </td>`;
+      }
+      if (!isStudent) {
+        tds += `<td>–</td><td>–</td>`;
+      } else if (e) {
+        tds += `<td><input type="text" class="form-input" style="padding:.3rem .5rem;font-size:.78rem" value="${escAttr(e.instrument)}" onblur="updateEnrollmentInstrument(${e.id}, this.value)"></td>`;
+        tds += `<td>
+          <select class="form-input" style="padding:.3rem .5rem;font-size:.78rem" onchange="updateEnrollmentTeacher(${e.id}, this.value)">${teacherOptionsHtml(e.teacher_id)}</select>
+          <button class="btn-sm btn-del" style="margin-top:.3rem" onclick="deleteEnrollment(${e.id})">حذف ساز</button>
+        </td>`;
+      } else {
+        tds += `<td><input type="text" class="form-input" style="padding:.3rem .5rem;font-size:.78rem" placeholder="+ ساز جدید" id="new-enroll-instrument-${u.id}"></td>`;
+        tds += `<td>
+          <select class="form-input" style="padding:.3rem .5rem;font-size:.78rem" id="new-enroll-teacher-${u.id}">${teacherOptionsHtml(null)}</select>
+          <button class="btn-sm btn-edit" style="margin-top:.3rem" onclick="createEnrollmentFor('${u.id}')">+ افزودن</button>
+        </td>`;
+      }
+      if (isFirst) {
+        tds += `<td${span}>${u.created_at ? new Date(u.created_at).toLocaleDateString('fa-IR') : '–'}</td>`;
+        tds += `<td${span}><button class="btn-sm btn-del" onclick="deleteUser('${u.id}')">حذف</button></td>`;
+      }
+      rows.push(`<tr>${tds}</tr>`);
+    });
+  });
+  body.innerHTML = rows.join('');
+}
+
+async function updateEnrollmentInstrument(id, value) {
+  const instrument = value.trim();
+  try { await callApi('update_enrollment', { id, instrument }); loadUsers(); }
+  catch (e) { alert('خطا: ' + e.message); }
+}
+
+async function updateEnrollmentTeacher(id, teacherId) {
+  try { await callApi('update_enrollment', { id, teacherId: teacherId || null }); loadUsers(); }
+  catch (e) { alert('خطا: ' + e.message); }
+}
+
+async function createEnrollmentFor(studentId) {
+  const instrument = document.getElementById('new-enroll-instrument-' + studentId).value.trim();
+  const teacherId = document.getElementById('new-enroll-teacher-' + studentId).value;
+  if (!instrument) { alert('ساز الزامی است.'); return; }
+  try {
+    await callApi('create_enrollment', { studentId, instrument, teacherId: teacherId || null });
+    loadUsers();
+  } catch (e) { alert('خطا: ' + e.message); }
+}
+
+async function deleteEnrollment(id) {
+  if (!confirm('این ثبت‌نام ساز حذف شود؟')) return;
+  try { await callApi('delete_enrollment', { id }); loadUsers(); }
+  catch (e) { alert('خطا: ' + e.message); }
 }
 
 function openUserForm() {
