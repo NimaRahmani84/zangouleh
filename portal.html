@@ -331,17 +331,6 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
             <span id="profile-name-msg" style="font-size:.8rem;color:var(--burgundy)"></span>
           </div>
         </div>
-        <div class="dash-form">
-          <div class="dash-form-row">
-            <div><label>New Password</label><input type="password" id="profile-password" placeholder="At least 6 characters"></div>
-            <div><label>Confirm Password</label><input type="password" id="profile-password2"></div>
-          </div>
-          <div class="dash-form-actions">
-            <button class="btn-dash btn-dash-primary" onclick="saveProfilePassword()">Change Password</button>
-            <span id="profile-password-msg" style="font-size:.8rem;color:var(--burgundy)"></span>
-          </div>
-        </div>
-
         <div class="dash-section-title">Messages from Your Teacher</div>
         <div class="dash-table-wrap">
           <table class="dash-table">
@@ -952,20 +941,6 @@ async function saveProfileName(){
   const {error}=await sb.from('profiles').update({full_name:fullName}).eq('id',session.user.id);
   msg.textContent=error?('Error: '+error.message):'✓ Saved';
   if(!error)setTimeout(()=>{msg.textContent='';},3000);
-}
-
-async function saveProfilePassword(){
-  const p1=document.getElementById('profile-password').value;
-  const p2=document.getElementById('profile-password2').value;
-  const msg=document.getElementById('profile-password-msg');
-  if(!p1||p1.length<6){msg.textContent='Password must be at least 6 characters.';return;}
-  if(p1!==p2){msg.textContent='Passwords do not match.';return;}
-  const {error}=await sb.auth.updateUser({password:p1});
-  if(error){msg.textContent='Error: '+error.message;return;}
-  msg.textContent='✓ Password updated';
-  document.getElementById('profile-password').value='';
-  document.getElementById('profile-password2').value='';
-  setTimeout(()=>{msg.textContent='';},3000);
 }
 
 // ── STUDENT ──
