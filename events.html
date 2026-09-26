@@ -50,6 +50,7 @@
                 <label style="display:flex;align-items:center;gap:.5rem;font-size:.85rem"><input type="radio" name="pieceChoice" value="Yourtmeh (by Nima Rahmani)" required> Yourtmeh — Nima Rahmani</label>
               </div>
             </div>
+            <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;top:-9999px" aria-hidden="true">
             <button type="submit" class="btn-primary" style="width:100%;margin-top:.5rem">Submit</button>
           </form>
           <div id="workshop-success" class="form-success" style="display:none">✓ Thank you! The school will contact you to coordinate timing and when the term begins.</div>
@@ -103,7 +104,7 @@ async function handleWorkshop(e){
   var orig=btn.textContent;
   btn.disabled=true; btn.textContent='Sending…';
   var fd=new FormData(e.target);
-  var data={formType:'workshop',fullName:fd.get('fullName'),email:fd.get('email'),phone:fd.get('phone'),whatsapp:fd.get('whatsapp'),age:fd.get('age'),instrument:fd.get('instrument'),yearsPlaying:fd.get('yearsPlaying'),lastPiece:fd.get('lastPiece'),lastBook:fd.get('lastBook'),pieceChoice:fd.get('pieceChoice')};
+  var data={formType:'workshop',fullName:fd.get('fullName'),email:fd.get('email'),phone:fd.get('phone'),whatsapp:fd.get('whatsapp'),age:fd.get('age'),instrument:fd.get('instrument'),yearsPlaying:fd.get('yearsPlaying'),lastPiece:fd.get('lastPiece'),lastBook:fd.get('lastBook'),pieceChoice:fd.get('pieceChoice'),website:fd.get('website')};
   try{
     var r=await fetch('/api/send-form',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
     if(!r.ok) throw 0;

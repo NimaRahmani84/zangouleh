@@ -88,6 +88,7 @@
                 </select>
               </div>
               <div class="form-group"><label class="form-label">Message</label><textarea name="message" class="form-textarea" placeholder="How can we help?" required></textarea></div>
+              <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;top:-9999px" aria-hidden="true">
               <button type="submit" class="btn-primary" style="width:100%">Send Message</button>
             </form>
             <div id="contact-success" class="form-success">✓ Message received! We'll reply within 24 hours.</div>
@@ -118,7 +119,7 @@ async function handleContact(e){
   var orig=btn.textContent;
   btn.disabled=true; btn.textContent='Sending…';
   var fd=new FormData(e.target);
-  var data={formType:'contact',name:fd.get('name'),email:fd.get('email'),phone:fd.get('phone'),subject:fd.get('subject'),message:fd.get('message')};
+  var data={formType:'contact',name:fd.get('name'),email:fd.get('email'),phone:fd.get('phone'),subject:fd.get('subject'),message:fd.get('message'),website:fd.get('website')};
   try{
     var r=await fetch('/api/send-form',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
     if(!r.ok) throw 0;

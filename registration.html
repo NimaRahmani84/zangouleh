@@ -209,6 +209,7 @@
                 <select name="contactMethod" class="form-select"><option>WhatsApp message</option><option>Phone call</option><option>Email</option><option>In-person visit</option></select>
               </div>
               <div class="form-group"><label class="form-label">Message / Questions (optional)</label><textarea name="message" class="form-textarea" placeholder="Tell us about your goals or any questions you have..."></textarea></div>
+              <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;top:-9999px" aria-hidden="true">
               <button type="submit" class="btn-primary" style="width:100%">Request Consultation</button>
             </form>
             <div id="consult-success" class="form-success">✓ Thank you! We'll reach out within 24 hours to schedule your consultation.</div>
@@ -396,6 +397,7 @@
                 <label class="ack-checkbox" style="margin-bottom:0"><input type="checkbox" id="final-agree-checkbox" onchange="updateSubmitState()" required> I have read and agree to all Zangouleh Music School policies above.</label>
               </div>
 
+              <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;top:-9999px" aria-hidden="true">
               <button type="submit" class="btn-primary" style="width:100%;margin-top:1.25rem" id="enroll-submit-btn" disabled>Complete Enrollment →</button>
             </form>
             <div id="enroll-success" class="form-success" style="display:none"></div>
@@ -475,7 +477,7 @@ async function handleConsult(e){
   var btn=e.target.querySelector('button[type="submit"]');
   var orig=btn.textContent; btn.disabled=true; btn.textContent='Sending…';
   var fd=new FormData(e.target);
-  var data={formType:'consultation',firstName:fd.get('firstName'),lastName:fd.get('lastName'),phone:fd.get('phone'),whatsapp:fd.get('whatsapp'),email:fd.get('email'),instrument:fd.get('instrument'),age:fd.get('age'),contactMethod:fd.get('contactMethod'),message:fd.get('message')};
+  var data={formType:'consultation',firstName:fd.get('firstName'),lastName:fd.get('lastName'),phone:fd.get('phone'),whatsapp:fd.get('whatsapp'),email:fd.get('email'),instrument:fd.get('instrument'),age:fd.get('age'),contactMethod:fd.get('contactMethod'),message:fd.get('message'),website:fd.get('website')};
   try{
     var r=await fetch('/api/send-form',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
     if(!r.ok) throw 0;
@@ -539,7 +541,7 @@ async function handleEnroll(e){
   var btn=e.target.querySelector('button[type="submit"]');
   var orig=btn.textContent; btn.disabled=true; btn.textContent='Sending…';
   var fd=new FormData(e.target);
-  var data={formType:'enrollment',firstName:fd.get('firstName'),lastName:fd.get('lastName'),phone:fd.get('phone'),whatsapp:fd.get('whatsapp'),email:fd.get('email'),reference:fd.get('reference'),birthDate:fd.get('birthDate'),instrument:fd.get('instrument'),classType:fd.get('classType'),age:fd.get('age'),duration:fd.get('duration'),sessionCount:fd.get('sessionCount'),price:fd.get('price'),package:fd.get('package'),allergyInfo:fd.get('allergyInfo'),paymentMethod:fd.get('paymentMethod'),notes:fd.get('notes'),recordingConsent:fd.get('recordingConsent')?'Yes':'No',cameraConsent:fd.get('cameraConsent')?'Yes':'No',policiesAgreed:document.getElementById('final-agree-checkbox').checked?'Yes':'No'};
+  var data={formType:'enrollment',firstName:fd.get('firstName'),lastName:fd.get('lastName'),phone:fd.get('phone'),whatsapp:fd.get('whatsapp'),email:fd.get('email'),reference:fd.get('reference'),birthDate:fd.get('birthDate'),instrument:fd.get('instrument'),classType:fd.get('classType'),age:fd.get('age'),duration:fd.get('duration'),sessionCount:fd.get('sessionCount'),price:fd.get('price'),package:fd.get('package'),allergyInfo:fd.get('allergyInfo'),paymentMethod:fd.get('paymentMethod'),notes:fd.get('notes'),recordingConsent:fd.get('recordingConsent')?'Yes':'No',cameraConsent:fd.get('cameraConsent')?'Yes':'No',policiesAgreed:document.getElementById('final-agree-checkbox').checked?'Yes':'No',website:fd.get('website')};
   try{
     var r=await fetch('/api/send-form',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
     if(!r.ok) throw 0;
