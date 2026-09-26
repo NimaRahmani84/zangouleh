@@ -69,6 +69,12 @@
 
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+/* Some labels in a row wrap to two lines (e.g. "WhatsApp (if different
+   from phone)") while their neighbor stays on one line, which pushes
+   that input box lower than the one next to it. Reserve enough height
+   for two lines on every label inside a row so the input boxes below
+   always line up. */
+.form-row .form-label { min-height: 2.3rem; line-height: 1.35; }
 
 /* ── Payment options ── */
 .payment-opts {
