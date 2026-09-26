@@ -265,7 +265,10 @@
                 <div class="form-group"><label class="form-label">First Name * — نام</label><input name="firstName" type="text" class="form-input" placeholder="First name" required></div>
                 <div class="form-group"><label class="form-label">Last Name * — نام خانوادگی</label><input name="lastName" type="text" class="form-input" placeholder="Last name" required></div>
               </div>
-              <div class="form-group"><label class="form-label">Phone / WhatsApp * — شماره تلفن</label><input name="phone" type="tel" class="form-input" placeholder="+1 (647) ..." required></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Phone * — شماره تلفن</label><input name="phone" type="tel" class="form-input" placeholder="+1 (647) ..." required></div>
+                <div class="form-group"><label class="form-label">WhatsApp (if different from phone) — واتساپ</label><input name="whatsapp" type="tel" class="form-input" placeholder="Leave blank if same as phone"></div>
+              </div>
               <div class="form-group"><label class="form-label">Email Address * (Gmail preferred)</label><input name="email" type="email" class="form-input" placeholder="your@email.com" required></div>
               <div class="form-row">
                 <div class="form-group"><label class="form-label">Reference — چطور با ما آشنا شدید؟</label><input name="reference" type="text" class="form-input" placeholder="Friend, Instagram, Google…"></div>
@@ -278,28 +281,6 @@
                   <optgroup label="Iranian Instruments — سازهای ایرانی"><option>Tar — تار</option><option>Setar — سه‌تار</option><option>Santur — سنتور</option><option>Daf — دف</option><option>Tombak — تنبک</option></optgroup>
                   <optgroup label="Western Instruments"><option>Piano</option><option>Guitar</option><option>Violin</option><option>Drums</option><option>Voice / Singing</option></optgroup>
                   <optgroup label="Programs"><option>Kids Music Program</option><option>Adult Music Program</option><option>Music Wellness</option><option>Music Theory</option><option>Composition &amp; Songwriting</option><option>Choir &amp; Vocal Group</option><option>Recording &amp; Studio Production</option></optgroup>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Preferred Instructor — استاد</label>
-                <select name="instructor" class="form-select">
-                  <option value="">Assigned by the school (recommended)</option>
-                  <option>Nima Rahmani — Santur &amp; Music Theory</option>
-                  <option>Amirali Kamali — Violin &amp; Kamancheh</option>
-                  <option>Nima Hagighi — Cello</option>
-                  <option>Yaganeh Vardi — Piano</option>
-                  <option>Abbas Maarefvand — Cajon</option>
-                  <option>Mehdi Yousefian — Oud</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Preferred Class Time * — زمان کلاس</label>
-                <select name="classTime" class="form-select" required>
-                  <option value="">Select preferred time</option>
-                  <optgroup label="Weekday Mornings"><option>Monday 9am–12pm</option><option>Tuesday 9am–12pm</option><option>Wednesday 9am–12pm</option><option>Thursday 9am–12pm</option><option>Friday 9am–12pm</option></optgroup>
-                  <optgroup label="Weekday Afternoons"><option>Monday 12pm–5pm</option><option>Tuesday 12pm–5pm</option><option>Wednesday 12pm–5pm</option><option>Thursday 12pm–5pm</option><option>Friday 12pm–5pm</option></optgroup>
-                  <optgroup label="Weekday Evenings"><option>Monday 5pm–8pm</option><option>Tuesday 5pm–8pm</option><option>Wednesday 5pm–8pm</option><option>Thursday 5pm–8pm</option><option>Friday 5pm–8pm</option></optgroup>
-                  <optgroup label="Weekend"><option>Saturday morning</option><option>Saturday afternoon</option><option>Sunday morning</option><option>Sunday afternoon</option></optgroup>
                 </select>
               </div>
               <div class="form-group">
@@ -549,7 +530,7 @@ async function handleEnroll(e){
   var btn=e.target.querySelector('button[type="submit"]');
   var orig=btn.textContent; btn.disabled=true; btn.textContent='Sending…';
   var fd=new FormData(e.target);
-  var data={formType:'enrollment',firstName:fd.get('firstName'),lastName:fd.get('lastName'),phone:fd.get('phone'),email:fd.get('email'),reference:fd.get('reference'),birthDate:fd.get('birthDate'),instrument:fd.get('instrument'),instructor:fd.get('instructor'),classTime:fd.get('classTime'),classType:fd.get('classType'),age:fd.get('age'),duration:fd.get('duration'),sessionCount:fd.get('sessionCount'),price:fd.get('price'),package:fd.get('package'),allergyInfo:fd.get('allergyInfo'),paymentMethod:fd.get('paymentMethod'),notes:fd.get('notes'),recordingConsent:fd.get('recordingConsent')?'Yes':'No',cameraConsent:fd.get('cameraConsent')?'Yes':'No',policiesAgreed:document.getElementById('final-agree-checkbox').checked?'Yes':'No'};
+  var data={formType:'enrollment',firstName:fd.get('firstName'),lastName:fd.get('lastName'),phone:fd.get('phone'),whatsapp:fd.get('whatsapp'),email:fd.get('email'),reference:fd.get('reference'),birthDate:fd.get('birthDate'),instrument:fd.get('instrument'),classType:fd.get('classType'),age:fd.get('age'),duration:fd.get('duration'),sessionCount:fd.get('sessionCount'),price:fd.get('price'),package:fd.get('package'),allergyInfo:fd.get('allergyInfo'),paymentMethod:fd.get('paymentMethod'),notes:fd.get('notes'),recordingConsent:fd.get('recordingConsent')?'Yes':'No',cameraConsent:fd.get('cameraConsent')?'Yes':'No',policiesAgreed:document.getElementById('final-agree-checkbox').checked?'Yes':'No'};
   try{
     var r=await fetch('/api/send-form',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
     if(!r.ok) throw 0;

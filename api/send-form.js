@@ -50,13 +50,12 @@ module.exports = async (req, res) => {
     subject = `[Enrollment] ${d.firstName} ${d.lastName} — ${d.package || 'no package'}`;
     rows = [
       ['Name', `${d.firstName} ${d.lastName}`],
-      ['Phone / WhatsApp', d.phone],
+      ['Phone', d.phone],
+      ['WhatsApp', d.whatsapp || 'Same as phone'],
       ['Email', d.email],
       ['Reference', d.reference || '—'],
       ['Day & Month of Birth', d.birthDate || '—'],
       ['Instrument / Program', d.instrument],
-      ['Preferred Instructor', d.instructor || 'School assigned'],
-      ['Class Time', d.classTime || '—'],
       ['Class Type', d.classType || '—'],
       ['Student Age', d.age || '—'],
       ['Package', d.package || '—'],
