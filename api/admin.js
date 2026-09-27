@@ -58,6 +58,16 @@ module.exports = async (req, res) => {
         return res.json({ data });
       }
 
+      case 'update_profile_fields': {
+        const updates = {};
+        if (payload.fullName !== undefined) updates.full_name = payload.fullName;
+        if (payload.instrument !== undefined) updates.instrument = payload.instrument;
+        if (!Object.keys(updates).length) return res.status(400).json({ error: 'هیچ فیلدی برای به‌روزرسانی داده نشده' });
+        const { error } = await sb.from('profiles').update(updates).eq('id', payload.id);
+        if (error) throw error;
+        return res.json({ ok: true });
+      }
+
       case 'list_enrollments': {
         const { data, error } = await sb.from('enrollments').select('*').order('created_at', { ascending: false });
         if (error) throw error;

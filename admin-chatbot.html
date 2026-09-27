@@ -484,14 +484,20 @@ function renderUsers() {
       const span = slots.length > 1 ? ` rowspan="${slots.length}"` : '';
       let tds = '';
       if (isFirst) {
-        tds += `<td${span}>${esc(u.full_name)}</td><td${span}>${esc(u.email)}</td>`;
+        tds += `<td${span}><input type="text" class="form-input" style="padding:.3rem .5rem;font-size:.78rem" value="${escAttr(u.full_name || '')}" onblur="updateProfileField('${u.id}','fullName',this.value)"></td>`;
+        tds += `<td${span}>${esc(u.email)}</td>`;
         tds += `<td${span}>
           <select class="form-input" style="padding:.3rem .5rem;font-size:.78rem;width:auto" onchange="updateRole('${u.id}', this.value)">
             ${Object.entries(ROLE_LABEL).map(([v, label]) => `<option value="${v}" ${u.role === v ? 'selected' : ''}>${label}</option>`).join('')}
           </select>
         </td>`;
       }
-      if (!isStudent) {
+      if (u.role === 'teacher') {
+        if (isFirst) {
+          tds += `<td${span}><input type="text" class="form-input" style="padding:.3rem .5rem;font-size:.78rem" value="${escAttr(u.instrument || '')}" placeholder="مثلاً: سنتور، تئوری موسیقی" onblur="updateProfileField('${u.id}','instrument',this.value)"></td>`;
+          tds += `<td${span}>–</td>`;
+        }
+      } else if (!isStudent) {
         tds += `<td>–</td><td>–</td>`;
       } else if (e) {
         tds += `<td><input type="text" class="form-input" style="padding:.3rem .5rem;font-size:.78rem" value="${escAttr(e.instrument)}" onblur="updateEnrollmentInstrument(${e.id}, this.value)"></td>`;
@@ -514,6 +520,13 @@ function renderUsers() {
     });
   });
   body.innerHTML = rows.join('');
+}
+
+async function updateProfileField(id, field, value) {
+  const payload = { id };
+  payload[field] = value.trim();
+  try { await callApi('update_profile_fields', payload); loadUsers(); }
+  catch (e) { alert('خطا: ' + e.message); }
 }
 
 async function updateEnrollmentInstrument(id, value) {
