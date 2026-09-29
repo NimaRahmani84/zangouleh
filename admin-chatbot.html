@@ -517,12 +517,37 @@ function renderUsers() {
       }
       if (isFirst) {
         tds += `<td${span}>${fmtDate(u.created_at)}</td>`;
-        tds += `<td${span}><button class="btn-sm btn-del" onclick="deleteUser('${u.id}')">حذف</button></td>`;
+        tds += `<td${span} style="white-space:nowrap">
+          <button class="btn-sm btn-del" onclick="deleteUser('${u.id}')">حذف</button>
+          <button class="btn-sm btn-edit" style="margin-top:.3rem" id="link-btn-${u.id}" onclick="getSetupLink('${u.id}','${escAttr(u.email)}')">لینک ورود</button>
+        </td>`;
       }
       rows.push(`<tr>${tds}</tr>`);
     });
   });
   body.innerHTML = rows.join('');
+}
+
+async function getSetupLink(id, email) {
+  const btn = document.getElementById('link-btn-' + id);
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'در حال ساخت…';
+  try {
+    const { link } = await callApi('generate_setup_link', { email, origin: window.location.origin });
+    try {
+      await navigator.clipboard.writeText(link);
+      btn.textContent = '✓ کپی شد';
+    } catch {
+      // اگه کپی خودکار به هر دلیلی کار نکرد (مثلاً مرورگر اجازه نداد)، خود لینک رو نشون بده تا دستی کپی بشه
+      prompt('این لینک رو کپی کنید و مستقیم (مثلاً از واتساپ) براش بفرستید:', link);
+      btn.textContent = orig;
+    }
+  } catch (e) {
+    alert('خطا: ' + e.message);
+    btn.textContent = orig;
+  }
+  btn.disabled = false;
+  setTimeout(() => { btn.textContent = orig; }, 4000);
 }
 
 async function updateProfileField(id, field, value) {

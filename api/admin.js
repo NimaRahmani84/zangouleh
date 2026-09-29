@@ -69,6 +69,25 @@ module.exports = async (req, res) => {
         return res.json({ data: enriched });
       }
 
+      case 'generate_setup_link': {
+        if (!payload.email) return res.status(400).json({ error: 'ایمیل الزامی است' });
+        // به جای فرستادن ایمیل (که ممکنه به هر دلیلی نرسه)، خود لینک رو
+        // می‌سازیم تا ادمین مستقیم (مثلاً از واتساپ) برای کاربر بفرسته.
+        // از همون فرمت token_hash+type که reset-password.html پشتیبانی
+        // می‌کنه استفاده می‌کنیم، نه لینک پیش‌فرض Supabase (که با یک بار
+        // باز شدن خودکار توسط اسکنرهای ایمیل، منقضی می‌شه).
+        const { data, error } = await sb.auth.admin.generateLink({
+          type: 'recovery',
+          email: payload.email
+        });
+        if (error) throw error;
+        const hashedToken = data?.properties?.hashed_token;
+        if (!hashedToken) return res.status(500).json({ error: 'تولید لینک ناموفق بود' });
+        const origin = payload.origin || 'https://zangoulehmusicschool.com';
+        const link = `${origin}/reset-password.html?token_hash=${hashedToken}&type=recovery`;
+        return res.json({ link });
+      }
+
       case 'update_profile_fields': {
         const updates = {};
         if (payload.fullName !== undefined) updates.full_name = payload.fullName;
