@@ -485,7 +485,10 @@ function renderUsers() {
       let tds = '';
       if (isFirst) {
         tds += `<td${span}><input type="text" class="form-input" style="padding:.3rem .5rem;font-size:.78rem" value="${escAttr(u.full_name || '')}" onblur="updateProfileField('${u.id}','fullName',this.value)"></td>`;
-        tds += `<td${span}>${esc(u.email)}</td>`;
+        const unconfirmedBadge = u.email_confirmed === false
+          ? '<br><span style="color:#c0392b;font-size:.68rem;font-weight:700">✗ ایمیل تأیید نشده</span>'
+          : '';
+        tds += `<td${span}>${esc(u.email)}${unconfirmedBadge}</td>`;
         tds += `<td${span}>
           <select class="form-input" style="padding:.3rem .5rem;font-size:.78rem;width:auto" onchange="updateRole('${u.id}', this.value)">
             ${Object.entries(ROLE_LABEL).map(([v, label]) => `<option value="${v}" ${u.role === v ? 'selected' : ''}>${label}</option>`).join('')}

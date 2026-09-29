@@ -55,7 +55,18 @@ module.exports = async (req, res) => {
       case 'list_profiles': {
         const { data, error } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
         if (error) throw error;
-        return res.json({ data });
+        // پروفایل به‌تنهایی نمی‌گه ایمیل کاربر تأیید شده یا نه (اون فقط توی
+        // auth.users هست) — برای همین اینجا اضافه‌ش می‌کنیم تا ادمین بتونه
+        // ببینه کی خودش sign up کرده ولی گیر کرده و ایمیلش تأیید نشده
+        let confirmedById = new Map();
+        try {
+          const { data: authData } = await sb.auth.admin.listUsers({ perPage: 1000 });
+          confirmedById = new Map((authData?.users || []).map(u => [u.id, !!u.email_confirmed_at]));
+        } catch (e) {
+          console.error('[admin] list_profiles: could not load auth confirmation status:', e.message);
+        }
+        const enriched = (data || []).map(p => ({ ...p, email_confirmed: confirmedById.has(p.id) ? confirmedById.get(p.id) : null }));
+        return res.json({ data: enriched });
       }
 
       case 'update_profile_fields': {
