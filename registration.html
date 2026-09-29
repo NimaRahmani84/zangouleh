@@ -193,11 +193,14 @@
               <div class="form-group"><label class="form-label">Email Address</label><input name="email" type="email" class="form-input" placeholder="your@email.com"></div>
               <div class="form-group">
                 <label class="form-label">Instrument / Program of Interest</label>
-                <select name="instrument" class="form-select">
+                <select name="instrument" class="form-select" onchange="goToEventIfSelected(this)">
                   <option value="">Not sure yet</option>
                   <optgroup label="Iranian Instruments"><option>Tar</option><option>Setar</option><option>Santur</option><option>Daf</option><option>Tombak</option></optgroup>
                   <optgroup label="Western Instruments"><option>Piano</option><option>Guitar</option><option>Violin</option><option>Drums</option><option>Voice</option></optgroup>
                   <optgroup label="Programs"><option>Kids Music Program</option><option>Adult Music Program</option><option>Music Wellness</option><option>Music Theory</option><option>Composition &amp; Songwriting</option><option>Choir &amp; Vocal Group</option><option>Recording &amp; Studio Production</option></optgroup>
+                  <optgroup label="Events">
+                    <option value="__event:workshops:third-ensemble">Workshops — The Third Ensemble Playing Workshop</option>
+                  </optgroup>
                 </select>
               </div>
               <div class="form-group">
@@ -286,11 +289,14 @@
               </div>
               <div class="form-group">
                 <label class="form-label">Instrument / Program * — ساز یا برنامه</label>
-                <select name="instrument" class="form-select" required>
+                <select name="instrument" class="form-select" required onchange="goToEventIfSelected(this)">
                   <option value="">Select your instrument or program</option>
                   <optgroup label="Iranian Instruments — سازهای ایرانی"><option>Tar — تار</option><option>Setar — سه‌تار</option><option>Santur — سنتور</option><option>Daf — دف</option><option>Tombak — تنبک</option></optgroup>
                   <optgroup label="Western Instruments"><option>Piano</option><option>Guitar</option><option>Violin</option><option>Drums</option><option>Voice / Singing</option></optgroup>
                   <optgroup label="Programs"><option>Kids Music Program</option><option>Adult Music Program</option><option>Music Wellness</option><option>Music Theory</option><option>Composition &amp; Songwriting</option><option>Choir &amp; Vocal Group</option><option>Recording &amp; Studio Production</option></optgroup>
+                  <optgroup label="Events">
+                    <option value="__event:workshops:third-ensemble">Workshops — The Third Ensemble Playing Workshop</option>
+                  </optgroup>
                 </select>
               </div>
               <div class="form-group">
@@ -470,6 +476,17 @@ function backToChoose(){
   document.getElementById('step-choose').style.display='block';
   document.querySelectorAll('.reg-option-card').forEach(c=>c.classList.remove('selected'));
   window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// The "Instrument / Program" dropdown also lists one-off events (e.g.
+// workshops) — picking one of those isn't a real instrument choice, it
+// just sends the visitor straight to that event's spot on the Events page.
+var EVENT_REDIRECTS = {
+  '__event:workshops:third-ensemble': 'events.html#workshop-third-ensemble'
+};
+function goToEventIfSelected(select){
+  var target = EVENT_REDIRECTS[select.value];
+  if (target) window.location.href = target;
 }
 
 async function handleConsult(e){
