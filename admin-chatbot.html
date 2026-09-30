@@ -195,7 +195,7 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.25)}
             <option value="admin">ادمین</option>
           </select>
         </div>
-        <div class="form-group" id="user-instrument-group"><label class="form-label">ساز</label><input type="text" id="user-instrument" class="form-input"></div>
+        <div class="form-group" id="user-instrument-group"><label class="form-label">ساز</label><select id="user-instrument" class="form-input"></select></div>
         <div class="form-group" id="user-teacher-group"><label class="form-label">استاد</label><select id="user-teacher" class="form-input"><option value="">— بدون استاد —</option></select></div>
         <div class="kb-form-actions">
           <button class="btn-primary" onclick="saveUser()">ایجاد و ارسال دعوت‌نامه</button>
@@ -244,6 +244,22 @@ let accessToken = null;
 // زمانی تنظیم شده (وگرنه locale فارسی مرورگر می‌تونه تاریخ‌ها رو شمسی نشون بده)
 function fmtDate(iso) { return iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/Toronto' }) : '–'; }
 function fmtDateTime(iso) { return iso ? new Date(iso).toLocaleString('en-CA', { timeZone: 'America/Toronto' }) : '–'; }
+
+// همون لیست ساز/برنامه‌ای که تو فرم‌های ثبت‌نام سایت (registration.html) هست،
+// اینجا هم استفاده می‌شه تا یکسان بمونه — بدون گروه «Events» چون اون فقط
+// برای ریدایرکت به صفحه‌ی رویدادهاست، نه یه ساز واقعی برای enrollment
+const INSTRUMENT_OPTIONS_HTML = `
+  <option value="">— انتخاب کنید —</option>
+  <optgroup label="Iranian Instruments — سازهای ایرانی">
+    <option>Tar — تار</option><option>Setar — سه‌تار</option><option>Santur — سنتور</option><option>Daf — دف</option><option>Tombak — تنبک</option>
+  </optgroup>
+  <optgroup label="Western Instruments">
+    <option>Piano</option><option>Guitar</option><option>Violin</option><option>Drums</option><option>Voice / Singing</option>
+  </optgroup>
+  <optgroup label="Programs">
+    <option>Kids Music Program</option><option>Adult Music Program</option><option>Music Wellness</option><option>Music Theory</option><option>Composition &amp; Songwriting</option><option>Choir &amp; Vocal Group</option><option>Recording &amp; Studio Production</option>
+  </optgroup>
+`;
 
 async function callApi(action, payload = {}) {
   const res = await fetch(API, {
@@ -509,7 +525,7 @@ function renderUsers() {
           <button class="btn-sm btn-del" style="margin-top:.3rem" onclick="deleteEnrollment(${e.id})">حذف ساز</button>
         </td>`;
       } else {
-        tds += `<td><input type="text" class="form-input" style="padding:.3rem .5rem;font-size:.78rem" placeholder="+ ساز جدید" id="new-enroll-instrument-${u.id}"></td>`;
+        tds += `<td><select class="form-input" style="padding:.3rem .5rem;font-size:.78rem" id="new-enroll-instrument-${u.id}">${INSTRUMENT_OPTIONS_HTML}</select></td>`;
         tds += `<td>
           <select class="form-input" style="padding:.3rem .5rem;font-size:.78rem" id="new-enroll-teacher-${u.id}">${teacherOptionsHtml(null)}</select>
           <button class="btn-sm btn-edit" style="margin-top:.3rem" onclick="createEnrollmentFor('${u.id}')">+ افزودن</button>
@@ -588,7 +604,7 @@ function openUserForm() {
   document.getElementById('user-fullname').value = '';
   document.getElementById('user-email').value = '';
   document.getElementById('user-role').value = 'student';
-  document.getElementById('user-instrument').value = '';
+  document.getElementById('user-instrument').innerHTML = INSTRUMENT_OPTIONS_HTML;
   const teacherSelect = document.getElementById('user-teacher');
   teacherSelect.innerHTML = '<option value="">— بدون استاد —</option>' +
     usersCache.filter(u => u.role === 'teacher').map(t => `<option value="${t.id}">${esc(t.full_name || t.email)}</option>`).join('');
