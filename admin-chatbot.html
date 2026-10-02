@@ -532,7 +532,6 @@ function renderUsers() {
         tds += `<td><input type="text" class="form-input" style="padding:.3rem .5rem;font-size:.78rem" value="${escAttr(e.instrument)}" onblur="updateEnrollmentInstrument(${e.id}, this.value)"></td>`;
         tds += `<td>
           <select class="form-input" style="padding:.3rem .5rem;font-size:.78rem" onchange="updateEnrollmentTeacher(${e.id}, this.value)">${teacherOptionsHtml(e.teacher_id)}</select>
-          <button class="btn-sm btn-del" style="margin-top:.3rem" onclick="deleteEnrollment(${e.id})">حذف ساز</button>
         </td>`;
       } else {
         tds += `<td><select class="form-input" style="padding:.3rem .5rem;font-size:.78rem" id="new-enroll-instrument-${u.id}">${INSTRUMENT_OPTIONS_HTML}</select></td>`;
@@ -546,10 +545,14 @@ function renderUsers() {
         const addToggleBtn = isStudent && myEnrollments.length
           ? `<button class="btn-sm btn-edit" style="margin-top:.3rem" onclick="toggleAddRow('${u.id}')">${expandedAddRows.has(u.id) ? '− بستن' : '+ ساز'}</button>`
           : '';
+        const deleteEnrollmentBtns = myEnrollments.map(en =>
+          `<button class="btn-sm btn-del" style="margin-top:.3rem" onclick="deleteEnrollment(${en.id})" title="حذف ${escAttr(en.instrument)}">حذف ${esc(en.instrument)}</button>`
+        ).join('');
         tds += `<td${span} style="white-space:nowrap">
           <button class="btn-sm btn-del" onclick="deleteUser('${u.id}')">حذف</button>
           <button class="btn-sm btn-edit" style="margin-top:.3rem" id="link-btn-${u.id}" onclick="getSetupLink('${u.id}','${escAttr(u.email)}')">لینک ورود</button>
           ${addToggleBtn}
+          ${deleteEnrollmentBtns}
         </td>`;
       }
       rows.push(`<tr>${tds}</tr>`);
