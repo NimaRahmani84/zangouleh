@@ -205,8 +205,8 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.25)}
       </div>
       <div class="dash-table-wrap">
         <table class="dash-table">
-          <thead><tr><th>نام</th><th>ایمیل</th><th>نقش</th><th>ساز</th><th>استاد</th><th>تاریخ عضویت</th><th>حذف</th></tr></thead>
-          <tbody id="users-body"><tr><td colspan="7" class="empty-note">در حال بارگذاری…</td></tr></tbody>
+          <thead><tr><th>#</th><th>نام</th><th>ایمیل</th><th>نقش</th><th>ساز</th><th>استاد</th><th>تاریخ عضویت</th><th>حذف</th></tr></thead>
+          <tbody id="users-body"><tr><td colspan="8" class="empty-note">در حال بارگذاری…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -473,7 +473,7 @@ async function loadUsers() {
     usersCache = profiles || [];
     enrollmentsCache = enrollments || [];
     renderUsers();
-  } catch (e) { body.innerHTML = `<tr><td colspan="7" class="empty-note">خطا: ${e.message}</td></tr>`; }
+  } catch (e) { body.innerHTML = `<tr><td colspan="8" class="empty-note">خطا: ${e.message}</td></tr>`; }
 }
 
 function teacherOptionsHtml(selectedId) {
@@ -482,24 +482,34 @@ function teacherOptionsHtml(selectedId) {
     teachers.map(t => `<option value="${t.id}" ${t.id === selectedId ? 'selected' : ''}>${esc(t.full_name || t.email)}</option>`).join('');
 }
 
+let expandedAddRows = new Set();
+function toggleAddRow(userId) {
+  if (expandedAddRows.has(userId)) expandedAddRows.delete(userId);
+  else expandedAddRows.add(userId);
+  renderUsers();
+}
+
 function renderUsers() {
   const body = document.getElementById('users-body');
-  if (!usersCache.length) { body.innerHTML = '<tr><td colspan="7" class="empty-note">کاربری یافت نشد.</td></tr>'; return; }
+  if (!usersCache.length) { body.innerHTML = '<tr><td colspan="8" class="empty-note">کاربری یافت نشد.</td></tr>'; return; }
 
   const rows = [];
-  usersCache.forEach(u => {
+  usersCache.forEach((u, idx) => {
     const isStudent = u.role === 'student';
-    // برای هنرجو: یک ردیف به‌ازای هر enrollment موجود، به‌اضافه یک ردیف
-    // خالی همیشگی برای اضافه‌کردن ساز/استاد جدید. برای استاد/ادمین: فقط
-    // یک ردیف ثابت (ساز/استاد اصلاً معنی نداره).
+    // برای هنرجو: یک ردیف به‌ازای هر enrollment موجود. ردیف «افزودن ساز
+    // جدید» فقط وقتی نشون داده می‌شه که هنوز هیچ سازی نداره، یا خودِ ادمین
+    // با دکمه‌ی + بازش کرده باشه — وگرنه برای هر هنرجو همیشه یه ردیف اضافه
+    // و خالی پایین لیستش می‌موند و جدول خیلی طولانی می‌شد.
     const myEnrollments = isStudent ? enrollmentsCache.filter(e => e.student_id === u.id) : [];
-    const slots = isStudent ? [...myEnrollments, null] : [null];
+    const showAddSlot = isStudent && (!myEnrollments.length || expandedAddRows.has(u.id));
+    const slots = isStudent ? [...myEnrollments, ...(showAddSlot ? [null] : [])] : [null];
 
     slots.forEach((e, i) => {
       const isFirst = i === 0;
       const span = slots.length > 1 ? ` rowspan="${slots.length}"` : '';
       let tds = '';
       if (isFirst) {
+        tds += `<td${span}>${idx + 1}</td>`;
         tds += `<td${span}><input type="text" class="form-input" style="padding:.3rem .5rem;font-size:.78rem" value="${escAttr(u.full_name || '')}" onblur="updateProfileField('${u.id}','fullName',this.value)"></td>`;
         const unconfirmedBadge = u.email_confirmed === false
           ? '<br><span style="color:#c0392b;font-size:.68rem;font-weight:700">✗ ایمیل تأیید نشده</span>'
@@ -533,9 +543,13 @@ function renderUsers() {
       }
       if (isFirst) {
         tds += `<td${span}>${fmtDate(u.created_at)}</td>`;
+        const addToggleBtn = isStudent && myEnrollments.length
+          ? `<button class="btn-sm btn-edit" style="margin-top:.3rem" onclick="toggleAddRow('${u.id}')">${expandedAddRows.has(u.id) ? '− بستن' : '+ ساز'}</button>`
+          : '';
         tds += `<td${span} style="white-space:nowrap">
           <button class="btn-sm btn-del" onclick="deleteUser('${u.id}')">حذف</button>
           <button class="btn-sm btn-edit" style="margin-top:.3rem" id="link-btn-${u.id}" onclick="getSetupLink('${u.id}','${escAttr(u.email)}')">لینک ورود</button>
+          ${addToggleBtn}
         </td>`;
       }
       rows.push(`<tr>${tds}</tr>`);
