@@ -167,6 +167,7 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
             <div><label>Total Sessions</label><input type="number" id="pay-total-sessions" placeholder="12"></div>
             <div><label>Status</label><select id="pay-status"><option value="paid">Paid</option><option value="pending">Pending</option><option value="overdue">Overdue</option></select></div>
             <div><label>Due Date</label><input type="date" id="pay-due-date"></div>
+            <div><label>Start Date (defaults to today)</label><input type="date" id="pay-start-date"></div>
           </div>
           <div class="dash-form-actions">
             <button class="btn-dash btn-dash-primary" onclick="upsertPayment()">Save Payment</button>
@@ -187,8 +188,8 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
         <p style="font-size:.78rem;color:var(--ink-soft);margin-top:-.5rem;margin-bottom:.75rem">"Enrolled Via" sets the teacher's payout split: School = 60% teacher / 40% school. Instructor = 70% teacher / 30% school.</p>
         <div class="dash-table-wrap">
           <table class="dash-table">
-            <thead><tr><th>Name</th><th>Email</th><th>Instrument</th><th>Teacher</th><th>Enrolled Via</th><th>Joined</th></tr></thead>
-            <tbody id="admin-students-body"><tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
+            <thead><tr><th>Name</th><th>Email</th><th>Instrument</th><th>Teacher</th><th>Enrolled Via</th><th>Joined</th><th>Print</th></tr></thead>
+            <tbody id="admin-students-body"><tr><td colspan="7" style="text-align:center;color:var(--ink-soft);padding:2rem">Loading…</td></tr></tbody>
           </table>
         </div>
 
@@ -246,6 +247,7 @@ table.dash-table tr:hover td{background:rgba(246,235,138,.45)}
             <div><label>Total Sessions</label><input type="number" id="t-pay-total-sessions" placeholder="12"></div>
             <div><label>Status</label><select id="t-pay-status"><option value="paid">Paid</option><option value="pending">Pending</option><option value="overdue">Overdue</option></select></div>
             <div><label>Due Date</label><input type="date" id="t-pay-due-date"></div>
+            <div><label>Start Date (defaults to today)</label><input type="date" id="t-pay-start-date"></div>
           </div>
           <div class="dash-form-actions">
             <button class="btn-dash btn-dash-primary" onclick="teacherUpsertPayment()">Save Payment</button>
@@ -615,11 +617,13 @@ async function loadAdminData(){
   const rows=[];
   (students||[]).forEach(s=>{
     const myEnrollments=(enrollments||[]).filter(e=>e.student_id===s.id);
+    const printLink=`<a href="print-student.html?student=${s.id}" target="_blank" class="btn-mark-paid" style="text-decoration:none;display:inline-block;background:var(--burgundy)">🖨️ Print</a>`;
     if(!myEnrollments.length){
       rows.push(`<tr>
         <td>${esc(s.full_name)}</td><td>${esc(s.email)}</td><td>–</td><td>–</td>
         <td style="color:var(--ink-soft)">Not enrolled yet</td>
         <td>${fmtDate(s.created_at)}</td>
+        <td>${printLink}</td>
       </tr>`);
       return;
     }
@@ -634,6 +638,7 @@ async function loadAdminData(){
           </select>
         </td>
         <td>${fmtDate(s.created_at)}</td>
+        <td>${printLink}</td>
       </tr>`);
     });
   });
@@ -657,9 +662,10 @@ async function upsertPayment(){
   const totalSessions=document.getElementById('pay-total-sessions').value;
   const status=document.getElementById('pay-status').value;
   const due=document.getElementById('pay-due-date').value;
+  const startDate=document.getElementById('pay-start-date').value;
   const msg=document.getElementById('pay-msg');
   if(!email||!amount){msg.textContent='Email and amount required.';return;}
-  const {error}=await sb.from('payments').insert({student_email:email,enrollment_id:enrollmentId?parseInt(enrollmentId):null,amount:parseFloat(amount),package:pkg,total_sessions:totalSessions?parseInt(totalSessions):null,status,due_date:due||null});
+  const {error}=await sb.from('payments').insert({student_email:email,enrollment_id:enrollmentId?parseInt(enrollmentId):null,amount:parseFloat(amount),package:pkg,total_sessions:totalSessions?parseInt(totalSessions):null,status,due_date:due||null,start_date:startDate||undefined});
   if(error){msg.textContent='Error: '+error.message;}
   else{msg.textContent='✓ Saved!';loadAdminData();setTimeout(()=>{msg.textContent='';},3000);}
 }
@@ -817,9 +823,10 @@ async function teacherUpsertPayment(){
   const totalSessions=document.getElementById('t-pay-total-sessions').value;
   const status=document.getElementById('t-pay-status').value;
   const due=document.getElementById('t-pay-due-date').value;
+  const startDate=document.getElementById('t-pay-start-date').value;
   const msg=document.getElementById('t-pay-msg');
   if(!email||!amount){msg.textContent='Email and amount required.';return;}
-  const {error}=await sb.from('payments').insert({student_email:email,enrollment_id:enrollmentId?parseInt(enrollmentId):null,amount:parseFloat(amount),package:pkg,total_sessions:totalSessions?parseInt(totalSessions):null,status,due_date:due||null});
+  const {error}=await sb.from('payments').insert({student_email:email,enrollment_id:enrollmentId?parseInt(enrollmentId):null,amount:parseFloat(amount),package:pkg,total_sessions:totalSessions?parseInt(totalSessions):null,status,due_date:due||null,start_date:startDate||undefined});
   if(error){msg.textContent='Error: '+error.message;}
   else{msg.textContent='✓ Saved!';setTimeout(()=>{msg.textContent='';},3000);}
 }

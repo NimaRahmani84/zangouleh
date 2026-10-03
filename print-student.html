@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zangouleh | Student Summary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:'Raleway',sans-serif;color:#1a1a1a;background:#fff}
+.toolbar{background:#822331;color:#f0d060;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.toolbar a{color:#f0d060;text-decoration:none;font-size:.85rem}
+.toolbar button{background:#f0d060;color:#822331;border:none;padding:.5rem 1.2rem;border-radius:4px;font-weight:700;cursor:pointer;font-size:.85rem}
+#loading{text-align:center;padding:4rem 2rem;color:#777}
+#content{max-width:800px;margin:0 auto;padding:2rem}
+.doc-header{text-align:center;border-bottom:3px solid #822331;padding-bottom:1rem;margin-bottom:1.5rem}
+.doc-header h1{font-family:Georgia,serif;color:#822331;margin:0 0 .3rem;font-size:1.6rem}
+.doc-header p{margin:.15rem 0;color:#555;font-size:.85rem}
+.section-title{font-family:Georgia,serif;font-style:italic;color:#822331;font-size:1.15rem;margin:1.75rem 0 .75rem;border-bottom:1px solid rgba(130,35,49,.25);padding-bottom:.3rem}
+.stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.6rem;margin-bottom:1rem}
+.stat-box{background:#fdf8ec;border:1.5px solid rgba(130,35,49,.2);border-radius:5px;padding:.6rem;text-align:center}
+.stat-num{font-weight:700;color:#822331;font-size:1.1rem}
+.stat-label{font-size:.68rem;color:#777;margin-top:.15rem}
+table{width:100%;border-collapse:collapse;font-size:.82rem;margin-bottom:.5rem}
+th{background:#822331;color:#f0d060;padding:.5rem .7rem;text-align:left;font-weight:600}
+td{padding:.5rem .7rem;border-bottom:1px solid #eee}
+.empty-note{text-align:center;color:#999;padding:1rem;font-size:.82rem}
+.doc-footer{margin-top:2.5rem;text-align:center;font-size:.72rem;color:#999}
+@media print{
+  .toolbar{display:none}
+  body{padding:0}
+  #content{max-width:none;padding:0}
+}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <a href="portal.html">← Back to Portal</a>
+  <button onclick="window.print()">🖨️ Print</button>
+</div>
+
+<div id="loading"><p>Loading…</p></div>
+<div id="denied" style="display:none;text-align:center;padding:4rem 2rem;color:#777">
+  <p>⛔ Admin access required.</p>
+  <p><a href="portal.html" style="color:#822331">Back to Portal</a></p>
+</div>
+<div id="content" style="display:none"></div>
+
+<script>
+function currentPackageFor(payments){
+  const pkgs=(payments||[]).filter(p=>p.total_sessions);
+  if(!pkgs.length)return null;
+  return pkgs.sort((a,b)=>new Date(b.start_date||b.created_at)-new Date(a.start_date||a.created_at))[0];
+}
+function computeSessionsLeft(payments,attendance){
+  const pkg=currentPackageFor(payments);
+  if(!pkg)return null;
+  const startDate=pkg.start_date||pkg.created_at;
+  const relevant=(attendance||[]).filter(a=>a.date>=startDate);
+  const presentCount=relevant.filter(a=>a.status==='present').length;
+  const unexcusedCount=relevant.filter(a=>a.status==='unexcused').length;
+  const freePasses=pkg.package==='12-session'?2:0;
+  const chargeableUnexcused=Math.max(0,unexcusedCount-freePasses);
+  return pkg.total_sessions-(presentCount+chargeableUnexcused);
+}
+function esc(s){return String(s??'–').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmtDate(iso){return iso?new Date(iso).toLocaleDateString('en-CA',{timeZone:'America/Toronto'}):'–';}
+
+function renderEnrollmentSection(title,att,payments){
+  const left=computeSessionsLeft(payments,att);
+  const attended=att.filter(a=>a.status==='present').length;
+  const lastPaid=payments.find(p=>p.status==='paid');
+  const nextDue=payments.find(p=>p.status!=='paid');
+
+  const attRows=att.length
+    ?att.map(a=>`<tr><td>${a.date}</td><td>${esc(a.status)}</td><td>${esc(a.notes)}</td></tr>`).join('')
+    :'<tr><td colspan="3" class="empty-note">No sessions recorded yet.</td></tr>';
+  const payRows=payments.length
+    ?payments.map(p=>`<tr><td>${esc(p.package)}</td><td>$${p.amount}</td><td>${esc(p.status)}</td><td>${p.due_date||'–'}</td></tr>`).join('')
+    :'<tr><td colspan="4" class="empty-note">No payment records yet.</td></tr>';
+
+  return `
+    <div class="section-title">${esc(title)}</div>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-num">${left===null?'–':left}</div><div class="stat-label">Sessions Left</div></div>
+      <div class="stat-box"><div class="stat-num">${attended}</div><div class="stat-label">Sessions Attended</div></div>
+      <div class="stat-box"><div class="stat-num">${lastPaid?'$'+lastPaid.amount:'$0'}</div><div class="stat-label">Last Tuition Paid</div></div>
+      <div class="stat-box"><div class="stat-num">${nextDue?'$'+nextDue.amount:'None'}</div><div class="stat-label">Next Payment Due</div></div>
+      <div class="stat-box"><div class="stat-num">${nextDue?esc(nextDue.status):'All clear'}</div><div class="stat-label">Payment Status</div></div>
+    </div>
+    <table>
+      <thead><tr><th>Date</th><th>Status</th><th>Notes</th></tr></thead>
+      <tbody>${attRows}</tbody>
+    </table>
+    <table>
+      <thead><tr><th>Package</th><th>Amount</th><th>Status</th><th>Due Date</th></tr></thead>
+      <tbody>${payRows}</tbody>
+    </table>`;
+}
+
+async function init(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){document.getElementById('loading').style.display='none';document.getElementById('denied').style.display='block';return;}
+  const {data:myProfile}=await sb.from('profiles').select('role').eq('id',session.user.id).maybeSingle();
+  if(myProfile?.role!=='admin'){document.getElementById('loading').style.display='none';document.getElementById('denied').style.display='block';return;}
+
+  const studentId=new URLSearchParams(window.location.search).get('student');
+  if(!studentId){document.getElementById('loading').style.display='none';document.getElementById('denied').style.display='block';return;}
+
+  const {data:student}=await sb.from('profiles').select('*').eq('id',studentId).maybeSingle();
+  if(!student){document.getElementById('loading').style.display='none';document.getElementById('denied').style.display='block';return;}
+
+  const [{data:enrollments},{data:att},{data:payments}]=await Promise.all([
+    sb.from('enrollments').select('*').eq('student_id',studentId),
+    sb.from('attendance').select('*').eq('student_id',studentId).order('date',{ascending:false}),
+    sb.from('payments').select('*').eq('student_email',student.email).order('due_date',{ascending:false})
+  ]);
+
+  const sections=(enrollments||[]).map(e=>renderEnrollmentSection(
+    `${e.instrument} with ${e.teacher_name||'—'}`,
+    (att||[]).filter(a=>a.enrollment_id===e.id),
+    (payments||[]).filter(p=>p.enrollment_id===e.id)
+  ));
+  const unassignedAtt=(att||[]).filter(a=>!a.enrollment_id);
+  const unassignedPay=(payments||[]).filter(p=>!p.enrollment_id);
+  if(unassignedAtt.length||unassignedPay.length){
+    sections.push(renderEnrollmentSection('Unassigned / legacy records',unassignedAtt,unassignedPay));
+  }
+
+  document.getElementById('content').innerHTML=`
+    <div class="doc-header">
+      <h1>Zangouleh Music School</h1>
+      <p>Student Summary — ${esc(student.full_name)}</p>
+      <p>${esc(student.email)} · Printed ${fmtDate(new Date().toISOString())}</p>
+    </div>
+    ${sections.length?sections.join(''):'<p class="empty-note">This student is not enrolled with a teacher yet.</p>'}
+    <div class="doc-footer">Zangouleh Music School · zangoulehmusicschool.com · +1 647 827 6462</div>
+  `;
+  document.getElementById('loading').style.display='none';
+  document.getElementById('content').style.display='block';
+}
+init();
+</script>
+</body>
+</html>
